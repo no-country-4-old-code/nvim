@@ -30,10 +30,19 @@ return {
 					mappings = {
 						i = {
 							["<C-h>"] = actions.which_key,
+
+							-- able to open multiple tabs at once
 							["<C-t>"] = select_one_or_multi,
+
 							-- reconfigure to be consistent with up/down
 							["<C-k>"] = actions.move_selection_previous,
 							["<C-j>"] = actions.move_selection_next,
+
+							-- preview window scrolling
+							["<Up>"] = actions.preview_scrolling_up,
+							["<Down>"] = actions.preview_scrolling_down,
+							["<Left>"] = actions.preview_scrolling_left,
+							["<Right>"] = actions.preview_scrolling_right,
 						},
 					},
 				},
