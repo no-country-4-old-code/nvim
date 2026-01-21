@@ -65,7 +65,7 @@ return {
 								return {
 									"git",
 									"log",
-									"--pretty=format:%Cgreen%h%Creset | %ad | %aN | %s",
+									"--pretty=format:> %Cgreen%h%Creset ( %ad ) by %aN \n  %s\n",
 									"--date=short",
 								}
 							end,
