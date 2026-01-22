@@ -55,6 +55,19 @@ return {
 							"--pretty=format:%h | %ad | %aN | %s%n%n%b",
 							"--date=format:%Y-%m-%d %H:%M",
 						},
+						previewer = require("telescope.previewers").new_termopen_previewer({
+							get_command = function(entry)
+								local hash = entry.value:match("^(%S+)")
+								return {
+									"git",
+									"show",
+									"--color=always",
+									"--stat",
+									"--patch",
+									hash,
+								}
+							end,
+						}),
 					},
 
 					git_branches = {
