@@ -12,3 +12,6 @@ Run lazy via `:Lazy` for installing packages.
 Run mason via `:Mason` and install
 - rust-analyzer
 - codelldb
+
+### external tools
+- (optional) delta for nicer git-diff. Adapt git-config to use in nvim ( https://github.com/dandavison/delta )
