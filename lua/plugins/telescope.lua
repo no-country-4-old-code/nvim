@@ -52,7 +52,7 @@ return {
 						git_command = {
 							"git",
 							"log",
-							"--pretty=format:%h | %ad | %aN | %s%n%n%b",
+							"--pretty=format:%h | %ad | %s%n",
 							"--date=format:%Y-%m-%d %H:%M",
 						},
 						previewer = require("telescope.previewers").new_termopen_previewer({
