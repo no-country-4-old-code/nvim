@@ -41,6 +41,10 @@ return {
 
 			require("telescope").setup({
 				defaults = {
+					layout_config = {
+						scroll_speed = 1,
+					},
+
 					mappings = {
 						i = {
 							["<C-h>"] = actions.which_key,
