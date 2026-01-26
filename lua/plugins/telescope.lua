@@ -68,6 +68,7 @@ return {
 								}
 							end,
 						}),
+						-- TODO: Scrolling UP and DOWN does not work in this previewer
 					},
 
 					git_branches = {
@@ -78,10 +79,13 @@ return {
 								return {
 									"git",
 									"log",
+									hash,
 									"--pretty=format:> %Cgreen%h%Creset ( %ad ) by %aN \n  %s\n",
 									"--date=short",
 								}
 							end,
+							-- TODO: I want to use git status better (add, remove, commit, push)
+							-- TODO: I want to see diff between different branches
 						}),
 					},
 				},
