@@ -25,6 +25,20 @@ return {
 				end
 			end
 
+			local scroll_git_preview = function(self, direction)
+				-- scroll function to enable scrolling of git-preview
+				if not self.state then
+					return
+				end
+
+				local input = direction > 0 and [[]] or [[]]
+				local count = math.abs(direction)
+
+				vim.api.nvim_buf_call(self.state.termopen_bufnr, function()
+					vim.cmd([[normal! ]] .. count .. input)
+				end)
+			end
+
 			require("telescope").setup({
 				defaults = {
 					mappings = {
@@ -60,6 +74,7 @@ return {
 								local hash = entry.value:match("^(%S+)")
 								return {
 									"git",
+									"--no-pager", -- this is needed to support preview scrolling
 									"show",
 									"--color=always",
 									"--stat",
@@ -67,28 +82,34 @@ return {
 									hash,
 								}
 							end,
+							scroll_fn = scroll_git_preview,
 						}),
-						-- TODO: Scrolling UP and DOWN does not work in this previewer
 					},
-
 					git_branches = {
+						mappings = {
+							i = {
+								["<C-d>"] = actions.preview_scrolling_down,
+							},
+						},
 						previewer = require("telescope.previewers").new_termopen_previewer({
 							get_command = function(entry)
-								-- extract hash from picker line
-								local hash = entry.value:match("^(%S+)")
 								return {
 									"git",
+									"--no-pager", -- this is needed to support preview scrolling
 									"log",
-									hash,
-									"--pretty=format:> %Cgreen%h%Creset ( %ad ) by %aN \n  %s\n",
-									"--date=short",
+									"--max-count=1000",
+									"--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset %n",
+									"--abbrev-commit",
+									"--date=relative",
+									entry.value,
 								}
 							end,
-							-- TODO: I want to use git status better (add, remove, commit, push)
-							-- TODO: I want to see diff between different branches
+							scroll_fn = scroll_git_preview,
 						}),
 					},
 				},
+				-- TODO: I want to use git status better (add, remove, commit, push)
+				-- TODO: I want to see diff between different branches
 			})
 			require("telescope").load_extension("live_grep_args")
 		end,
