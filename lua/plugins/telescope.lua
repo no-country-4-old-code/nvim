@@ -102,7 +102,7 @@ return {
 									"--no-pager", -- this is needed to support preview scrolling
 									"log",
 									"--max-count=1000",
-									"--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset %n",
+									"--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset",
 									"--abbrev-commit",
 									"--date=relative",
 									entry.value,
