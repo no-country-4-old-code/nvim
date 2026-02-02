@@ -5,9 +5,18 @@ local conf = require("telescope.config").values
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 
--- your custom scroll function (same as you referenced)
-local function scroll_git_preview(self, direction)
-	require("telescope.previewers.utils").scroll(self.state.bufnr, direction)
+local scroll_git_preview = function(self, direction)
+	-- scroll function to enable scrolling of git-preview
+	if not self.state then
+		return
+	end
+
+	local input = direction > 0 and [[]] or [[]]
+	local count = math.abs(direction)
+
+	vim.api.nvim_buf_call(self.state.termopen_bufnr, function()
+		vim.cmd([[normal! ]] .. count .. input)
+	end)
 end
 
 local diff = {}
@@ -17,15 +26,16 @@ diff.to_commit = function(opts)
 
 	local previewer = previewers.new_termopen_previewer({
 		get_command = function(entry)
+			local hash = entry.value:match("^(%S+)")
 			return {
 				"git",
 				"--no-pager",
-				"log",
-				"--max-count=1000",
-				"--pretty=format:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset",
-				"--abbrev-commit",
-				"--date=relative",
-				entry.value,
+				"diff",
+				"--color=always",
+				"--stat",
+				"--patch",
+				hash,
+				"HEAD",
 			}
 		end,
 		scroll_fn = scroll_git_preview,
@@ -33,34 +43,26 @@ diff.to_commit = function(opts)
 
 	pickers
 		.new(opts, {
-			prompt_title = "Git Branches (Custom)",
+			prompt_title = "Git Diff to Commit",
 
-			finder = finders.new_oneshot_job({ "git", "branch", "--all", "--color=never" }, {
+			finder = finders.new_oneshot_job({
+				"git",
+				"log",
+				"--pretty=format:%h | %ad | %s",
+				"--date=format:%Y-%m-%d %H:%M",
+			}, {
 				entry_maker = function(line)
-					local branch = line:gsub("^%*", ""):gsub("^%s+", "")
+					local hash = line:match("^(%S+)")
 					return {
-						value = branch,
+						value = hash,
 						display = line,
-						ordinal = branch,
+						ordinal = line,
 					}
 				end,
 			}),
 
 			sorter = conf.generic_sorter(opts),
 			previewer = previewer,
-
-			attach_mappings = function(prompt_bufnr, map)
-				map("i", "<C-d>", actions.preview_scrolling_down)
-				map("i", "<C-u>", actions.preview_scrolling_up)
-
-				actions.select_default:replace(function()
-					actions.close(prompt_bufnr)
-					local entry = action_state.get_selected_entry()
-					vim.cmd("Git checkout " .. entry.value)
-				end)
-
-				return true
-			end,
 		})
 		:find()
 end
