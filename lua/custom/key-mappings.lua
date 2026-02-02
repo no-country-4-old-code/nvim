@@ -27,7 +27,12 @@ function M.setup()
 	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "telescope shows git commits (buffer)" })
 	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "telescope shows git branches" })
 	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "telescope shows git status" })
+
 	-- ! telescope internal key-mappings are specified in plugin-file
+
+	-- telescope keymaps for my custom extensions
+	local extension = require("plugins.extensions.telescope")
+	vim.keymap.set("n", "<leader>gd", extension.diff.to_commit, { desc = "telescope shows git status" })
 
 	-- nvim-tree keymaps
 	local tree = require("nvim-tree.api")
