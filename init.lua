@@ -14,3 +14,6 @@ require("custom.tabs").setup()
 
 -- No swap file please !
 vim.opt.swapfile = false
+
+-- Load .nvim.lua from project root if present (nvim will prompt to trust on first load)
+vim.opt.exrc = true
