@@ -37,33 +37,33 @@ function M.setup()
 	end
 
 	-- code navigation (lsp)
-	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "lsp go to definition" })
-	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "lsp usages / references" })
-	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "lsp incoming calls (callers)" })
-	vim.keymap.set("n", "<leader>co", telescope.lsp_outgoing_calls, { desc = "lsp outgoing calls (callees)" })
-	vim.keymap.set("n", "<leader>cj", telescope.jumplist, { desc = "telescope list jumps" })
-	vim.keymap.set("n", "<leader>h", show_keymaps, { desc = "show custom keymaps" })
-	vim.keymap.set("n", "<leader>ff", telescope.find_files, { desc = "telescope find files" })
-	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "telescope live grep" })
-	vim.keymap.set("n", "<leader>fe", grep_by_extensions, { desc = "telescope grep filtered by extension" })
-	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "telescope registers" })
-	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "telescope buffers" })
-	vim.keymap.set("n", "<leader>gc", telescope.git_commits, { desc = "telescope shows git commits" })
-	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "telescope shows git commits (buffer)" })
-	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "telescope shows git branches" })
-	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "telescope shows git status" })
+	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "Go to definition" })
+	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "Find usages / references" })
+	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "Callstack up (who calls this)" })
+	vim.keymap.set("n", "<leader>co", telescope.lsp_outgoing_calls, { desc = "Callstack down (what this calls)" })
+	vim.keymap.set("n", "<leader>cj", telescope.jumplist, { desc = "Browse jump history" })
+	vim.keymap.set("n", "<leader>h", show_keymaps, { desc = "Show keymaps" })
+	vim.keymap.set("n", "<leader>ff", telescope.find_files, { desc = "Search by file name" })
+	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "Search in file contents" })
+	vim.keymap.set("n", "<leader>fe", grep_by_extensions, { desc = "Search in file contents (filter by extension)" })
+	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Browse registers" })
+	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Browse open buffers" })
+	vim.keymap.set("n", "<leader>gc", telescope.git_commits, { desc = "Browse git commits" })
+	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "Browse git commits for this file" })
+	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "Browse git branches" })
+	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
 
 	-- ! telescope internal key-mappings are specified in plugin-file
 
 	-- telescope keymaps for my custom extensions
 	local extension = require("plugins.extensions.telescope")
-	vim.keymap.set("n", "<leader>gd", extension.diff.to_commit, { desc = "telescope shows git status" })
+	vim.keymap.set("n", "<leader>gd", extension.diff.to_commit, { desc = "Diff file against commit" })
 
 	-- nvim-tree keymaps
 	local tree = require("nvim-tree.api")
 	vim.keymap.set("n", "<leader>ft", function()
 		tree.tree.toggle({ find_file = true, focus = true })
-	end, { desc = "nvim-tree: toggle tree view" })
+	end, { desc = "Toggle file tree" })
 	-- ! nvim-tree internal key-mappings are specified in plugin-file
 end
 
