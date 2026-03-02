@@ -61,7 +61,16 @@ return {
 					lualine_y = {},
 					lualine_z = { "progress" },
 				},
-				tabline = {},
+				tabline = {
+				lualine_a = {
+					{
+						"tabs",
+						mode = 1, -- filename only, no path
+						separator = { left = "", right = "" },
+						max_length = function() return vim.o.columns end,
+					},
+				},
+			},
 				extensions = {},
 			})
 		end,
