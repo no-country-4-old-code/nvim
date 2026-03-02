@@ -47,6 +47,7 @@ return {
 
 					mappings = {
 						i = {
+							["<Esc>"] = actions.close,
 							["<C-h>"] = actions.which_key,
 
 							-- able to open multiple tabs at once
