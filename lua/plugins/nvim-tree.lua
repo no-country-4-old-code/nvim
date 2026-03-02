@@ -28,6 +28,15 @@ return {
 				end
 			end
 
+			local function open_tab_background()
+				local node = api.tree.get_node_under_cursor()
+				if node and node.type == "file" then
+					local origin = vim.api.nvim_get_current_tabpage()
+					vim.cmd("tabedit " .. vim.fn.fnameescape(node.absolute_path))
+					vim.api.nvim_set_current_tabpage(origin)
+				end
+			end
+
 			-- default mappings
 			api.config.mappings.default_on_attach(bufnr)
 
@@ -35,9 +44,13 @@ return {
 			vim.keymap.set("n", "h", api.tree.change_root_to_parent, opts("Open parent"))
 			vim.keymap.set("n", "l", api.tree.change_root_to_node, opts("Close parent"))
 			vim.keymap.set("n", "<Space>", api.node.open.preview, opts("Preview file"))
-			vim.keymap.set("n", "<Down>", function() scroll_preview(1) end, opts("Scroll preview down"))
-			vim.keymap.set("n", "<Up>", function() scroll_preview(-1) end, opts("Scroll preview up"))
-			vim.keymap.set("n", "t", api.node.open.tab, opts("Open: New Tab"))
+			vim.keymap.set("n", "<Down>", function()
+				scroll_preview(1)
+			end, opts("Scroll preview down"))
+			vim.keymap.set("n", "<Up>", function()
+				scroll_preview(-1)
+			end, opts("Scroll preview up"))
+			vim.keymap.set("n", "t", open_tab_background, opts("Open: New Tab (stay)"))
 			vim.keymap.set("n", "v", api.node.open.vertical, opts("Open: Vertical"))
 			vim.keymap.set("n", "x", api.node.open.horizontal, opts("Open: Horizontal"))
 			vim.keymap.set("n", "q", api.tree.close, opts("Close Dialog"))
