@@ -21,6 +21,15 @@ return {
 					},
 				})
 			vim.lsp.enable("rust_analyzer")
+
+			-- C / C++
+			vim.lsp.enable("clangd")
+
+			-- C#
+			vim.lsp.enable("omnisharp")
+
+			-- Python
+			vim.lsp.enable("pyright")
 		end,
 	},
 }

@@ -4,7 +4,14 @@ return {
 
 	{
 		"mason-org/mason-lspconfig.nvim",
-		opts = {},
+		opts = {
+			ensure_installed = {
+				"rust_analyzer",
+				"clangd",
+				"omnisharp",
+				"pyright",
+			},
+		},
 		enable = true,
 		dependencies = {
 			{ "mason-org/mason.nvim", opts = {} },
