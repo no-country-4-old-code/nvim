@@ -28,12 +28,21 @@ function M.setup()
 		telescope.live_grep({ glob_pattern = globs })
 	end
 
+	local function show_keymaps()
+		telescope.keymaps({
+			filter = function(km)
+				return km.desc ~= nil and km.desc ~= ""
+			end,
+		})
+	end
+
 	-- code navigation (lsp)
 	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "lsp go to definition" })
 	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "lsp usages / references" })
 	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "lsp incoming calls (callers)" })
 	vim.keymap.set("n", "<leader>co", telescope.lsp_outgoing_calls, { desc = "lsp outgoing calls (callees)" })
 	vim.keymap.set("n", "<leader>cj", telescope.jumplist, { desc = "telescope list jumps" })
+	vim.keymap.set("n", "<leader>h", show_keymaps, { desc = "show custom keymaps" })
 	vim.keymap.set("n", "<leader>ff", telescope.find_files, { desc = "telescope find files" })
 	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "telescope live grep" })
 	vim.keymap.set("n", "<leader>fe", grep_by_extensions, { desc = "telescope grep filtered by extension" })

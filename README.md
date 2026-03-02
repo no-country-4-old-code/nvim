@@ -42,6 +42,7 @@ Auto-installed via Mason on first start.
 
 | Key | Action |
 |-----|--------|
+| `<leader>h`  | Show all custom keymaps |
 | `<leader>ff` | Find files |
 | `<leader>fg` | Live grep |
 | `<leader>fe` | Live grep filtered by extension — prompts e.g. `c cs json` |
