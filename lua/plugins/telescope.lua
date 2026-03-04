@@ -31,7 +31,7 @@ return {
 					return
 				end
 
-				local input = direction > 0 and [[]] or [[]]
+				local input = direction > 0 and [[]] or [[]]
 				local count = math.abs(direction)
 
 				vim.api.nvim_buf_call(self.state.termopen_bufnr, function()
@@ -67,6 +67,61 @@ return {
 				},
 
 				pickers = {
+					diagnostics = {
+						previewer = require("telescope.previewers").new_buffer_previewer({
+							define_preview = function(self, entry, status)
+								local message = (
+									type(entry.value) == "table" and (entry.value.message or entry.value.text)
+								)
+									or (type(entry.value) == "string" and entry.value)
+									or tostring(entry.value or "")
+								local width = vim.api.nvim_win_get_width(status.preview_win)
+								local sep = string.rep("\xe2\x94\x80", width)
+
+								local header = {}
+								for _, line in ipairs(vim.split(message, "\n")) do
+									while #line > width do
+										local break_pos = line:sub(1, width):match("^.*%s()")
+										if break_pos and break_pos > 1 then
+											table.insert(header, line:sub(1, break_pos - 2))
+											line = line:sub(break_pos)
+										else
+											table.insert(header, line:sub(1, width))
+											line = line:sub(width + 1)
+										end
+									end
+									table.insert(header, line)
+								end
+								while #header < 3 do
+									table.insert(header, "")
+								end
+								table.insert(header, sep)
+								table.insert(header, "")
+
+								local filename = entry.filename or entry.path
+								local file_lines = {}
+								if filename then
+									local ok, lines = pcall(vim.fn.readfile, filename)
+									if ok then
+										file_lines = lines
+									end
+								end
+
+								local all_lines = {}
+								vim.list_extend(all_lines, header)
+								vim.list_extend(all_lines, file_lines)
+								vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, all_lines)
+
+								local ft = (filename and vim.filetype.match({ filename = filename })) or ""
+								if ft ~= "" then
+									vim.bo[self.state.bufnr].filetype = ft
+								end
+
+								local target = (entry.lnum or 1) + #header
+								pcall(vim.api.nvim_win_set_cursor, status.preview_win, { target, entry.col or 0 })
+							end,
+						}),
+					},
 					git_commits = {
 						git_command = {
 							"git",

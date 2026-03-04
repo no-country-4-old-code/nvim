@@ -37,6 +37,7 @@ function M.setup()
 	end
 
 	-- code navigation (lsp)
+	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "Browse diagnostics (linting)" })
 	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "Go to definition" })
 	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "Find usages / references" })
 	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "Callstack up (who calls this)" })
