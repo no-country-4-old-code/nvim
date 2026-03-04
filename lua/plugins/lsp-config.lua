@@ -5,6 +5,12 @@ return {
 		"neovim/nvim-lspconfig",
 		enable = true,
 		config = function()
+			vim.diagnostic.config({
+				signs = false, -- I do not like if line-numbers move on the side
+				underline = true,
+				virtual_text = true,
+			})
+
 			-- Rust
 			on_attach =
 				function(client, bufnr)
