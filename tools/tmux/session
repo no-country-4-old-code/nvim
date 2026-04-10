@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Creates a tmux dev session for the current directory.
+#
+# INSTALL: Copy to ~/.local/bin/ and make executable:
+#   cp session ~/.local/bin/session && chmod +x ~/.local/bin/session
 
 SESSION=$(basename "$PWD")
 DIR="$PWD"
