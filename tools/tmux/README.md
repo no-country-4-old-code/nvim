@@ -8,10 +8,31 @@ If you are using the CLI very often, you want this.
 > tmux
 Opens a tmux session
 
-> CTRL+B ?
+> tmux list-sessions
+List all open session
+
+### Commands in tmux session
+<Prefix> = CTRL+B (default) 
+
+- <Prefix> ?
 Opens commands.
 Rest you can see there.
 Exit list with "q".
+
+- <Prefix> C
+Create new Window
+
+- <Prefix> 1
+Change to Window with index 1
+
+- <Prefix> %
+Split Pane vertically
+
+- <Prefix> =
+Split Pane horizontel
+
+- <Prefix> x
+Close Pane
 
 ## Config
 Config lays under $HOME/.tmux.conf .
