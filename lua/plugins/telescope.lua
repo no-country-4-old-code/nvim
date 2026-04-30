@@ -39,6 +39,34 @@ return {
 				end)
 			end
 
+			local open_commit_in_tab = function(prompt_bufnr)
+				local entry = require("telescope.actions.state").get_selected_entry()
+				if not entry then
+					return
+				end
+
+				actions.close(prompt_bufnr)
+
+				local hash = entry.value:match("^(%S+)")
+				local diff_output = vim.fn.systemlist({
+					"git",
+					"--no-pager",
+					"show",
+					"--stat",
+					"--patch",
+					hash,
+				})
+
+				vim.cmd("tabnew")
+				local buf = vim.api.nvim_get_current_buf()
+				vim.api.nvim_buf_set_lines(buf, 0, -1, false, diff_output)
+				pcall(vim.api.nvim_buf_set_name, buf, "commit://" .. hash)
+				vim.bo[buf].buftype = "nofile"
+				vim.bo[buf].bufhidden = "wipe"
+				vim.bo[buf].modifiable = false
+				vim.bo[buf].filetype = "diff"
+			end
+
 			require("telescope").setup({
 				defaults = {
 					layout_config = {
@@ -129,6 +157,9 @@ return {
 							"--pretty=format:%h | %ad | %s%n",
 							"--date=format:%Y-%m-%d %H:%M",
 						},
+						mappings = {
+							i = { ["<CR>"] = open_commit_in_tab },
+						},
 						previewer = require("telescope.previewers").new_termopen_previewer({
 							get_command = function(entry)
 								local hash = entry.value:match("^(%S+)")
@@ -144,6 +175,11 @@ return {
 							end,
 							scroll_fn = scroll_git_preview,
 						}),
+					},
+					git_bcommits = {
+						mappings = {
+							i = { ["<CR>"] = open_commit_in_tab },
+						},
 					},
 					git_branches = {
 						mappings = {

@@ -63,6 +63,38 @@ diff.to_commit = function(opts)
 
 			sorter = conf.generic_sorter(opts),
 			previewer = previewer,
+
+			attach_mappings = function(prompt_bufnr, map)
+				actions.select_default:replace(function()
+					local entry = action_state.get_selected_entry()
+					if not entry then
+						return
+					end
+
+					actions.close(prompt_bufnr)
+
+					local hash = entry.value
+					local diff_output = vim.fn.systemlist({
+						"git",
+						"--no-pager",
+						"diff",
+						"--stat",
+						"--patch",
+						hash,
+						"HEAD",
+					})
+
+					vim.cmd("tabnew")
+					local buf = vim.api.nvim_get_current_buf()
+					vim.api.nvim_buf_set_lines(buf, 0, -1, false, diff_output)
+					pcall(vim.api.nvim_buf_set_name, buf, "diff://" .. hash .. "..HEAD")
+					vim.bo[buf].buftype = "nofile"
+					vim.bo[buf].bufhidden = "wipe"
+					vim.bo[buf].modifiable = false
+					vim.bo[buf].filetype = "diff"
+				end)
+				return true
+			end,
 		})
 		:find()
 end
