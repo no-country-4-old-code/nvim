@@ -40,17 +40,10 @@ return {
 				end)
 			end
 
-			local function launch_diff_in_tmux(ref)
-				if vim.env.TMUX == nil or vim.env.TMUX == "" then
-					vim.notify("Must be inside a tmux session to open a separate diff window", vim.log.levels.ERROR)
-					return
-				end
-				local cwd = vim.fn.getcwd()
-				vim.fn.jobstart({
-					"tmux", "new-window",
-					"-c", cwd,
-					"nvim", "+DiffviewOpen " .. ref,
-				}, { detach = true })
+			local function launch_diff_view(ref)
+				vim.schedule(function()
+					vim.cmd("DiffviewOpen " .. vim.fn.fnameescape(ref))
+				end)
 			end
 
 			local open_diff_for_commit = function(prompt_bufnr)
@@ -58,14 +51,14 @@ return {
 				if not entry then return end
 				actions.close(prompt_bufnr)
 				local hash = entry.value:match("^(%S+)")
-				launch_diff_in_tmux(hash)
+				launch_diff_view(hash)
 			end
 
 			local open_diff_for_branch = function(prompt_bufnr)
 				local entry = action_state.get_selected_entry()
 				if not entry then return end
 				actions.close(prompt_bufnr)
-				launch_diff_in_tmux(entry.value)
+				launch_diff_view(entry.value)
 			end
 
 			require("telescope").setup({
