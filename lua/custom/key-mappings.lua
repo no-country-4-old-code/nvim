@@ -3,7 +3,6 @@ local M = {}
 function M.setup()
 	-- modules
 	local telescope = require("telescope.builtin")
-	local ext_telescope = require("plugins.extensions.telescope")
 
 	-- helper
 	local function show_keymaps()
@@ -53,7 +52,6 @@ function M.setup()
 	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "Browse git commits for this file" })
 	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "Browse git branches" })
 	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
-	vim.keymap.set("n", "<leader>gd", ext_telescope.diff.to_commit, { desc = "Compare current git commit to others" })
 
 	-- ! keymaps used inside modules like 'telescope' or 'nvim-tree' are define in the related plugin-files
 end

@@ -4,7 +4,7 @@ return {
 		tag = "v0.2.1",
 		config = function()
 			local actions = require("telescope.actions")
-			local git_diff_screen = require("plugins.extensions.telescope.git_diff_screen")
+			local action_state = require("telescope.actions.state")
 
 			local select_one_or_multi = function(prompt_bufnr)
 				-- custom function to enable multi select with tab opening
@@ -40,19 +40,32 @@ return {
 				end)
 			end
 
-			local open_commit_in_tab = function(prompt_bufnr)
-				local entry = require("telescope.actions.state").get_selected_entry()
-				if not entry then
+			local function launch_diff_in_tmux(ref)
+				if vim.env.TMUX == nil or vim.env.TMUX == "" then
+					vim.notify("Must be inside a tmux session to open a separate diff window", vim.log.levels.ERROR)
 					return
 				end
+				local cwd = vim.fn.getcwd()
+				vim.fn.jobstart({
+					"tmux", "new-window",
+					"-c", cwd,
+					"nvim", "+DiffviewOpen " .. ref,
+				}, { detach = true })
+			end
 
+			local open_diff_for_commit = function(prompt_bufnr)
+				local entry = action_state.get_selected_entry()
+				if not entry then return end
 				actions.close(prompt_bufnr)
-
 				local hash = entry.value:match("^(%S+)")
-				git_diff_screen.open_as_tab({
-					cmd = { "git", "--no-pager", "show", "--stat", "--patch", hash },
-					name = "commit://" .. hash,
-				})
+				launch_diff_in_tmux(hash)
+			end
+
+			local open_diff_for_branch = function(prompt_bufnr)
+				local entry = action_state.get_selected_entry()
+				if not entry then return end
+				actions.close(prompt_bufnr)
+				launch_diff_in_tmux(entry.value)
 			end
 
 			require("telescope").setup({
@@ -146,7 +159,7 @@ return {
 							"--date=format:%Y-%m-%d %H:%M",
 						},
 						mappings = {
-							i = { ["<CR>"] = open_commit_in_tab },
+							i = { ["<CR>"] = open_diff_for_commit },
 						},
 						previewer = require("telescope.previewers").new_termopen_previewer({
 							get_command = function(entry)
@@ -166,12 +179,13 @@ return {
 					},
 					git_bcommits = {
 						mappings = {
-							i = { ["<CR>"] = open_commit_in_tab },
+							i = { ["<CR>"] = open_diff_for_commit },
 						},
 					},
 					git_branches = {
 						mappings = {
 							i = {
+								["<CR>"] = open_diff_for_branch,
 								["<C-d>"] = actions.preview_scrolling_down,
 							},
 						},
@@ -193,7 +207,6 @@ return {
 					},
 				},
 				-- TODO: I want to use git status better (add, remove, commit, push)
-				-- TODO: I want to see diff between different branches
 			})
 			require("telescope").load_extension("live_grep_args")
 		end,
