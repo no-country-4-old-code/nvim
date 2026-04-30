@@ -4,6 +4,7 @@ return {
 		tag = "v0.2.1",
 		config = function()
 			local actions = require("telescope.actions")
+			local git_diff_screen = require("plugins.extensions.telescope.git_diff_screen")
 
 			local select_one_or_multi = function(prompt_bufnr)
 				-- custom function to enable multi select with tab opening
@@ -48,23 +49,10 @@ return {
 				actions.close(prompt_bufnr)
 
 				local hash = entry.value:match("^(%S+)")
-				local diff_output = vim.fn.systemlist({
-					"git",
-					"--no-pager",
-					"show",
-					"--stat",
-					"--patch",
-					hash,
+				git_diff_screen.open_as_tab({
+					cmd = { "git", "--no-pager", "show", "--stat", "--patch", hash },
+					name = "commit://" .. hash,
 				})
-
-				vim.cmd("tabnew")
-				local buf = vim.api.nvim_get_current_buf()
-				vim.api.nvim_buf_set_lines(buf, 0, -1, false, diff_output)
-				pcall(vim.api.nvim_buf_set_name, buf, "commit://" .. hash)
-				vim.bo[buf].buftype = "nofile"
-				vim.bo[buf].bufhidden = "wipe"
-				vim.bo[buf].modifiable = false
-				vim.bo[buf].filetype = "diff"
 			end
 
 			require("telescope").setup({

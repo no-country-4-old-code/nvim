@@ -1,3 +1,4 @@
+local git_diff_screen = require("plugins.extensions.telescope.git_diff_screen")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local previewers = require("telescope.previewers")
@@ -74,24 +75,10 @@ diff.to_commit = function(opts)
 					actions.close(prompt_bufnr)
 
 					local hash = entry.value
-					local diff_output = vim.fn.systemlist({
-						"git",
-						"--no-pager",
-						"diff",
-						"--stat",
-						"--patch",
-						hash,
-						"HEAD",
+					git_diff_screen.open_as_tab({
+						cmd = { "git", "--no-pager", "diff", "--stat", "--patch", hash, "HEAD" },
+						name = "diff://" .. hash .. "..HEAD",
 					})
-
-					vim.cmd("tabnew")
-					local buf = vim.api.nvim_get_current_buf()
-					vim.api.nvim_buf_set_lines(buf, 0, -1, false, diff_output)
-					pcall(vim.api.nvim_buf_set_name, buf, "diff://" .. hash .. "..HEAD")
-					vim.bo[buf].buftype = "nofile"
-					vim.bo[buf].bufhidden = "wipe"
-					vim.bo[buf].modifiable = false
-					vim.bo[buf].filetype = "diff"
 				end)
 				return true
 			end,
