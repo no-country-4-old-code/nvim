@@ -40,6 +40,8 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+alias c='clear'
+alias v='nvim'
 
 alias ..='cd ..'
 alias ...='cd ../..'
@@ -61,13 +63,4 @@ export LESS_TERMCAP_se=$'\e[0m'        # reset reverse video
 export LESS_TERMCAP_ue=$'\e[0m'        # reset underline
 export GROFF_NO_SGR=1                  # for konsole and gnome-terminal
 
-# --- PATH: add manually installed Neovim binary ---
-export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
-
-# --- NVM: Node Version Manager — lazy-loads node/npm on demand ---
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# --- CARGO: source Rust toolchain env (rustc, cargo, etc.) ---
-. "$HOME/.cargo/env"
+# --- other stuff like PATHs
