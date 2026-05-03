@@ -1,47 +1,31 @@
 # tmux
 
 ## Description
-Mangement of multiple windows, split screens, sessions and more.
-If you are using the CLI very often, you want this.
+Management of multiple windows and split panes.
+If you are in the CLI often, you want this.
 
 ## Commands
 > tmux
-Opens a tmux session
+Opens tmux.
 
-> tmux list-sessions
-List all open session
+### Commands inside tmux
+Those commands are based on my personal binding in the tmux.conf.
 
-### Commands in tmux session
-<Prefix> = CTRL+B (default) 
+`<Prefix>` = CTRL+Y
 
-- <Prefix> ?
-Opens commands.
-Rest you can see there.
-Exit list with "q".
-
-- <Prefix> C
-Create new Window
-
-- <Prefix> 1
-Change to Window with index 1
-
-- <Prefix> %
-Split Pane vertically
-
-- <Prefix> =
-Split Pane horizontel
-
-- <Prefix> x
-Close Pane
+| Key             | Action                  |
+|-----------------|-------------------------|
+| `<Prefix> ?`    | Show all keybindings    |
+| `<Prefix> c`    | Create new window       |
+| `<Prefix> 1-9`  | Switch to window by index |
+| `<Prefix> v`    | Split pane vertically   |
+| `<Prefix> s`    | Split pane horizontally |
+| `<Prefix> h`    | Move to pane left       |
+| `<Prefix> j`    | Move to pane down       |
+| `<Prefix> k`    | Move to pane up         |
+| `<Prefix> l`    | Move to pane right      |
+| `<Prefix> q`    | Close current pane      |
 
 ## Config
-Config lays under $HOME/.tmux.conf .
-You could e.g. change the status bar color to Tokio Night. 
-See example conf in this folder.
-
-## Scripts
-You can create scripts to automatically load and start your sessions.
-This way you can just start.
-See example script called "session" in this folder.
-
-
+Config lives at `$HOME/.tmux.conf`.
+See example config in this folder.
