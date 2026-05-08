@@ -48,6 +48,8 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
+alias diff='nvim -d'
+
 alias g='git status'
 alias gc='git commit'
 alias gp='git push'
