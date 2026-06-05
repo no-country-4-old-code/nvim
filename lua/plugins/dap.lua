@@ -37,7 +37,30 @@ return {
 			require("nvim-dap-virtual-text").setup({})
 
 			-- panels: scopes, breakpoints, call stack, watches, ...
-			dapui.setup()
+			dapui.setup({
+				controls = { enabled = false },
+				mappings = { open = "c" },
+				layouts = {
+					{
+						position = "left",
+						size = 40,
+						elements = {
+							{ id = "watches", size = 0.25 },
+							{ id = "breakpoints", size = 0.25 },
+							{ id = "scopes", size = 0.25 },
+							{ id = "stacks", size = 0.25 },
+						},
+					},
+					{
+						position = "bottom",
+						size = 10,
+						elements = {
+							{ id = "repl", size = 0.5 },
+							{ id = "console", size = 0.5 },
+						},
+					},
+				},
+			})
 
 			-- "c" in the breakpoints/stacks panels: open the target location in the main
 			vim.api.nvim_create_autocmd("FileType", {

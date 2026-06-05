@@ -62,16 +62,30 @@ return {
 					lualine_z = { "progress" },
 				},
 				tabline = {
-				lualine_a = {
-					{
-						"tabs",
-						mode = 1, -- filename only, no path
-						separator = { left = "", right = "" },
-						max_length = function() return vim.o.columns end,
+					lualine_a = {
+						{
+							"tabs",
+							mode = 1, -- filename only, no path
+							separator = { left = "", right = "" },
+							max_length = function()
+								return vim.o.columns
+							end,
+						},
 					},
 				},
-			},
-				extensions = {},
+				extensions = {
+					{
+						sections = {},
+						inactive_sections = {},
+						filetypes = {
+							"dapui_scopes",
+							"dapui_stacks",
+							"dapui_breakpoints",
+							"dapui_watches",
+							"dapui_console",
+						},
+					},
+				},
 			})
 		end,
 		dependencies = { "nvim-tree/nvim-web-devicons" },
