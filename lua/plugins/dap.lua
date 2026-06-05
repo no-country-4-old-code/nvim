@@ -54,6 +54,13 @@ return {
 				end,
 			})
 
+			-- after a REPL evaluate, re-request scopes so watches/locals refresh
+			dap.listeners.after.evaluate["dapui_refresh"] = function(session)
+				if session and session.current_frame then
+					session:_request_scopes(session.current_frame)
+				end
+			end
+
 			-- auto-open / auto-close the UI panels when a session starts/ends
 			dap.listeners.before.launch.dapui_config = function()
 				dapui.open()
