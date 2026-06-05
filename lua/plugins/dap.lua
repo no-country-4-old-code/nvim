@@ -92,6 +92,10 @@ return {
 			vim.keymap.set("n", "<leader>dr", dap.repl.toggle, { desc = "Toggle REPL (debug)" })
 			vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Toggle debug UI (debug)" })
 			vim.keymap.set("n", "<leader>de", dapui.eval, { desc = "Evaluate expression (debug)" })
+			vim.keymap.set("n", "<leader>dw", function()
+				local expr = vim.fn.expand("<cword>")
+				require("dapui").elements.watches.add(expr)
+			end, { desc = "Add word under cursor to watch (debug)" })
 		end,
 	},
 }
