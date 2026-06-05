@@ -93,7 +93,7 @@ return {
 			vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Toggle debug UI (debug)" })
 			vim.keymap.set("n", "<leader>de", dapui.eval, { desc = "Evaluate expression (debug)" })
 			vim.keymap.set("n", "<leader>dp", dap.pause, { desc = "Pause (debug)" })
-			vim.keymap.set("n", "<leader>ds", dap.stop, { desc = "Stop (debug)" })
+			vim.keymap.set("n", "<leader>ds", dap.restart, { desc = "Restart (debug)" })
 			vim.keymap.set("n", "<leader>dw", function()
 				local expr = vim.fn.expand("<cword>")
 				require("dapui").elements.watches.add(expr)
