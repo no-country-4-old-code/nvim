@@ -53,6 +53,47 @@ function M.setup()
 	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "Browse git branches" })
 	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
 
+	-- debug
+	vim.keymap.set("n", "<leader>db", function()
+		require("dap").toggle_breakpoint()
+	end, { desc = "Debug : Toggle breakpoint" })
+	vim.keymap.set("n", "<leader>dc", function()
+		require("dap").continue()
+	end, { desc = "Debug : Continue / start" })
+	vim.keymap.set("n", "<leader>dn", function()
+		require("dap").step_over()
+	end, { desc = "Debug : Step over" })
+	vim.keymap.set("n", "<leader>di", function()
+		require("dap").step_into()
+	end, { desc = "Debug : Step into" })
+	vim.keymap.set("n", "<leader>do", function()
+		require("dap").step_out()
+	end, { desc = "Debug : Step out" })
+	vim.keymap.set("n", "<leader>dx", function()
+		require("dap").terminate()
+	end, { desc = "Debug : Terminate" })
+	vim.keymap.set("n", "<leader>dp", function()
+		require("dap").pause()
+	end, { desc = "Debug : Pause" })
+	vim.keymap.set("n", "<leader>dr", function()
+		require("dap").restart()
+	end, { desc = "Debug : Restart" })
+	vim.keymap.set("n", "<leader>du", function()
+		require("dapui").toggle()
+	end, { desc = "Debug : Toggle UI" })
+	vim.keymap.set("n", "<leader>de", function()
+		require("dapui").eval()
+	end, { desc = "Debug : Evaluate expression" })
+	vim.keymap.set(
+		"n",
+		"<leader>dinfo",
+		function() end,
+		{ desc = "Debug : In side windows use e(dit), t(oggle), o(pen), c(ode), d(elete) " }
+	)
+	vim.keymap.set("n", "<leader>dw", function()
+		require("dapui").elements.watches.add(vim.fn.expand("<cword>"))
+	end, { desc = "Debug : Add word under cursor to watch" })
+
 	-- window picker
 	vim.keymap.set("n", "<leader>w", function()
 		local win = require("window-picker").pick_window()

@@ -111,21 +111,6 @@ return {
 			-- reuse the same config for C++
 			dap.configurations.cpp = dap.configurations.c
 
-			-- keymaps -------------------------------------------------------
-			vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug : Toggle breakpoint" })
-			vim.keymap.set("n", "<leader>dc", dap.continue, { desc = "Debug : Continue / start" })
-			vim.keymap.set("n", "<leader>dn", dap.step_over, { desc = "Debug : Step over" })
-			vim.keymap.set("n", "<leader>di", dap.step_into, { desc = "Debug : Step into" })
-			vim.keymap.set("n", "<leader>do", dap.step_out, { desc = "Debug : Step out" })
-			vim.keymap.set("n", "<leader>dx", dap.terminate, { desc = "Debug : Terminate" })
-			vim.keymap.set("n", "<leader>du", dapui.toggle, { desc = "Debug : Toggle UI" })
-			vim.keymap.set("n", "<leader>de", dapui.eval, { desc = "Debug : Evaluate expression" })
-			vim.keymap.set("n", "<leader>dp", dap.pause, { desc = "Debug : Pause" })
-			vim.keymap.set("n", "<leader>dr", dap.restart, { desc = "Debug : Restart" })
-			vim.keymap.set("n", "<leader>dw", function()
-				local expr = vim.fn.expand("<cword>")
-				require("dapui").elements.watches.add(expr)
-			end, { desc = "Debug : Add word under cursor to watch" })
 		end,
 	},
 }
