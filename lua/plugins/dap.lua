@@ -38,7 +38,6 @@ return {
 
 			-- panels: scopes, breakpoints, call stack, watches, ...
 			dapui.setup({
-				controls = { enabled = false },
 				mappings = { open = "c" },
 				layouts = {
 					{
