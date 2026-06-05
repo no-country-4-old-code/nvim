@@ -16,12 +16,6 @@ return {
 				},
 			})
 
-			vim.keymap.set("n", "<leader>w", function()
-				local win = require("window-picker").pick_window()
-				if win then
-					vim.api.nvim_set_current_win(win)
-				end
-			end, { desc = "Pick window to jump to" })
 		end,
 	},
 }
