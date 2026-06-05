@@ -5,9 +5,9 @@ return {
 		"mfussenegger/nvim-dap",
 		dependencies = {
 			"rcarriga/nvim-dap-ui",
-			"nvim-neotest/nvim-nio",          -- required by nvim-dap-ui
+			"nvim-neotest/nvim-nio", -- required by nvim-dap-ui
 			"theHamsta/nvim-dap-virtual-text", -- inline variable values
-			"jay-babu/mason-nvim-dap.nvim",   -- bridges Mason <-> nvim-dap
+			"jay-babu/mason-nvim-dap.nvim", -- bridges Mason <-> nvim-dap
 			"mason-org/mason.nvim",
 		},
 		config = function()
@@ -38,6 +38,21 @@ return {
 
 			-- panels: scopes, breakpoints, call stack, watches, ...
 			dapui.setup()
+
+			-- "c" in the breakpoints/stacks panels: open the target location in the main
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = { "dapui_breakpoints", "dapui_stacks" },
+				callback = function(ev)
+					vim.keymap.set("n", "c", function()
+						local panel_win = vim.api.nvim_get_current_win()
+						pcall(vim.cmd, "normal o") -- run the remapped open
+						pcall(vim.api.nvim_set_current_win, panel_win) -- restore focus immediately
+						vim.schedule(function() -- safety restore after any deferred focus steal
+							pcall(vim.api.nvim_set_current_win, panel_win)
+						end)
+					end, { buffer = ev.buf, nowait = true, desc = "Preview location in main window (keep focus)" })
+				end,
+			})
 
 			-- auto-open / auto-close the UI panels when a session starts/ends
 			dap.listeners.before.launch.dapui_config = function()
