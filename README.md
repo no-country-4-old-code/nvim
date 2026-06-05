@@ -4,6 +4,23 @@ Just my personal nvim settings.
 ## Getting started
 Put this under `~/.config/nvim`, then open nvim and run `:Lazy sync`. Mason will auto-install all LSP servers.
 
+### One-time Mason installs
+LSP servers are auto-installed on first start. Run these manually once for the debug adapter and formatters:
+
+```
+:MasonInstall cpptools codelldb clangd
+:MasonInstall stylua black isort
+```
+
+| Package | Purpose |
+|---------|---------|
+| `cpptools` | C/C++ debug adapter (`cppdbg` / GDB) |
+| `codelldb` | LLDB-based debug adapter (Rust / C++) |
+| `clangd` | C/C++ LSP server (also auto-installed via mason-lspconfig) |
+| `stylua` | Lua formatter |
+| `black` | Python formatter |
+| `isort` | Python import sorter |
+
 ### External tools
 - (optional) [delta](https://github.com/dandavison/delta) for nicer git-diff — adapt git config to use it in nvim
 
