@@ -66,6 +66,11 @@ function M.setup()
 					actions.close(prompt_bufnr)
 					vim.cmd("DiffviewFileHistory --range=" .. selection.value .. "^.." .. selection.value)
 				end)
+				map({ "i", "n" }, "<C-o>", function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+					vim.cmd("Git checkout " .. selection.value)
+				end)
 				return true
 			end,
 		})
@@ -74,7 +79,7 @@ function M.setup()
 		"n",
 		"<leader>gc",
 		git_commits,
-		{ desc = "Browse git commits (CR=diff vs HEAD | C-h=commit file overview)" }
+		{ desc = "Browse git commits (CR=diff vs HEAD | C-h=file overview | C-o=checkout)" }
 	)
 	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "Browse git commits for this file" })
 	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "Browse git branches" })
