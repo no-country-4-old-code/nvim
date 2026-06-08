@@ -51,7 +51,31 @@ function M.setup()
 	vim.keymap.set("n", "<leader>gd", "<cmd>DiffviewOpen master<CR>", { desc = "Open diff vs master (git)" })
 	vim.keymap.set("n", "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Close diffview (git)" })
 
-	vim.keymap.set("n", "<leader>gc", telescope.git_commits, { desc = "Browse git commits" })
+	local function git_commits()
+		local action_state = require("telescope.actions.state")
+		local actions = require("telescope.actions")
+		telescope.git_commits({
+			attach_mappings = function(prompt_bufnr, map)
+				map({ "i", "n" }, "<CR>", function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+					vim.cmd("DiffviewOpen " .. selection.value)
+				end)
+				map({ "i", "n" }, "<C-h>", function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+					vim.cmd("DiffviewFileHistory --range=" .. selection.value .. "^.." .. selection.value)
+				end)
+				return true
+			end,
+		})
+	end
+	vim.keymap.set(
+		"n",
+		"<leader>gc",
+		git_commits,
+		{ desc = "Browse git commits (CR=diff vs HEAD | C-h=commit file overview)" }
+	)
 	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "Browse git commits for this file" })
 	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "Browse git branches" })
 	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
