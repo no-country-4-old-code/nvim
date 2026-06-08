@@ -54,7 +54,25 @@ function M.setup()
 	local function git_commits()
 		local action_state = require("telescope.actions.state")
 		local actions = require("telescope.actions")
+		local previewers = require("telescope.previewers")
 		telescope.git_commits({
+			previewer = previewers.new_termopen_previewer({
+				get_command = function(entry)
+					local hash = entry.value
+					local hint = "  <CR> diff to current  |  <C-h> commit changes  |  <C-o> checkout"
+					local cmd = "git log -1 "
+						.. hash
+						.. " && echo '' && echo 'Files changed:'"
+						.. " && git diff-tree --no-commit-id -r --color=always --stat "
+						.. hash
+						.. " && printf '\\n"
+						.. string.rep("-", 50)
+						.. "\\n\\n"
+						.. hint
+						.. "\\n'"
+					return { "sh", "-c", cmd }
+				end,
+			}),
 			attach_mappings = function(prompt_bufnr, map)
 				map({ "i", "n" }, "<CR>", function()
 					local selection = action_state.get_selected_entry()
