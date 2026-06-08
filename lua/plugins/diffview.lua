@@ -7,6 +7,12 @@ return {
 			view = {
 				{ "n", "]h", function() vim.cmd("normal! ]c") end, { desc = "Next hunk" } },
 				{ "n", "[h", function() vim.cmd("normal! [c") end, { desc = "Prev hunk" } },
+				{ "n", "<leader>gp", function() vim.cmd("diffput") end, { desc = "Push hunk to other panel" } },
+				{ "n", "<leader>gl", function() vim.cmd("diffget") end, { desc = "Get hunk from other panel" } },
+				{ "n", "zo", "zo", { desc = "Open fold" } },
+				{ "n", "zr", "zr", { desc = "Open all folds one level" } },
+				{ "v", "<leader>gp", ":diffput<CR>", { desc = "Push selected lines to other panel" } },
+				{ "v", "<leader>gl", ":diffget<CR>", { desc = "Get selected lines from other panel" } },
 			},
 		},
 		hooks = {
