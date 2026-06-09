@@ -110,13 +110,9 @@ function M.setup()
 	vim.keymap.set("n", "<leader>dw", function()
 		dapui.elements.watches.add(vim.fn.expand("<cword>"))
 	end, { desc = "Debug : Add word under cursor to watch" })
-
-	-- ! keymaps used inside modules like 'telescope' or 'nvim-tree' are define in the related plugin-files,
-	-- ! except for diffview view keymaps which are defined below as M.diffview_view_keymaps
 end
 
--- Diffview view-buffer keymaps (applied by diffview.nvim, see lua/plugins/diffview.lua).
--- Buffer-local to diffview views; kept here so all <leader>g* git maps live in one place.
+-- keymaps for diffview only
 M.diffview_view_keymaps = {
 	-- merging changes
 	{ "n", "<leader>gp", "<cmd>diffput<CR>", { desc = "Git-Diff : Push hunk to other panel" } },
@@ -155,6 +151,20 @@ M.diffview_view_keymaps = {
 	-- folds
 	{ "n", "zo", "zo", { desc = "Open fold" } },
 	{ "n", "zc", "zc", { desc = "Close fold" } },
+}
+
+-- keymaps for diffview -> fileview
+M.diffview_file_history_panel_keymaps = {
+	-- override default <CR> (select_entry: opens diff but stays in panel) so it
+	-- opens the diff AND moves focus into the diff window
+	{
+		"n",
+		"<cr>",
+		function()
+			require("diffview.actions").focus_entry()
+		end,
+		{ desc = "Git-History : Open diff and focus the diff window" },
+	},
 }
 
 return M

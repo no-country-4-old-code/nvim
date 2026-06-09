@@ -7,7 +7,8 @@ return {
 		use_icons = false,
 		keymaps = {
 			view = keymaps.diffview_view_keymaps,
-			file_panel = {},
+			file_panel = keymaps.diffview_file_history_panel_keymaps,
+			file_history_panel = keymaps.diffview_file_history_panel_keymaps,
 		},
 		hooks = {
 			diff_buf_win_enter = function(bufnr, winid, ctx)
