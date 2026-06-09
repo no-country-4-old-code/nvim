@@ -134,7 +134,7 @@ function M.setup()
 		})
 	end
 	vim.keymap.set("n", "<leader>gb", git_branches, { desc = "Browse git branches (CR=diff vs current | C-o=checkout)" })
-	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
+	vim.keymap.set("n", "<leader>gs", "<cmd>DiffviewOpen<CR>", { desc = "Open git status / working tree diff (git)" })
 
 	-- history
 	vim.keymap.set("n", "<leader>hr", "<cmd>DiffviewFileHistory<CR>", { desc = "View repo history (history)" })
