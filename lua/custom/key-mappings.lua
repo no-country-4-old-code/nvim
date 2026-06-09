@@ -28,28 +28,34 @@ function M.setup()
 	vim.keymap.set("n", "<leader>h", show_keymaps, { desc = "Show keymaps" })
 
 	-- navigation
-	vim.keymap.set("n", "<leader>ft", open_file_tree, { desc = "Open file tree (navigation)" })
-	vim.keymap.set("n", "<leader>fj", telescope.jumplist, { desc = "Browse jump history (navigation)" })
-	vim.keymap.set("n", "<leader>ff", find_files, { desc = "Search by file name (navigation)" })
-	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "Search in file contents (navigation)" })
-	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Browse registers (navigation)" })
-	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Browse open buffers (navigation)" })
+	vim.keymap.set("n", "<leader>ft", open_file_tree, { desc = "Navigation : Open file tree" })
+	vim.keymap.set("n", "<leader>fj", telescope.jumplist, { desc = "Navigation : Browse jump history" })
+	vim.keymap.set("n", "<leader>ff", find_files, { desc = "Navigation : Search by file name" })
+	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "Navigation : Search in file contents" })
+	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Navigation : Browse copy & paste registers" })
+	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Navigation : Browse open buffers" })
+	vim.keymap.set("n", "<leader>w", function()
+		local win = require("window-picker").pick_window()
+		if win then
+			vim.api.nvim_set_current_win(win)
+		end
+	end, { desc = "Navigation : Pick window to jump to" })
 
 	-- code navigation via (lsp)
-	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "Browse diagnostics (linter) (code)" })
-	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "Go to definition (code)" })
-	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "Find usages / references (code)" })
-	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "Callstack up (who calls this) (code)" })
-	vim.keymap.set(
-		"n",
-		"<leader>co",
-		telescope.lsp_outgoing_calls,
-		{ desc = "Callstack down (what this calls) (code)" }
-	)
+	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "LSP : Browse diagnostics (linter)" })
+	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "LSP : Go to definition" })
+	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "LSP : Find usages / references" })
+	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "LSP : Callstack up (who calls this)" })
+	vim.keymap.set("n", "<leader>co", telescope.lsp_outgoing_calls, { desc = "LSP : Callstack down (what this calls)" })
+
+	-- tabs
+	vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "Tabs : New empty tab (tabs)" })
+	vim.keymap.set("n", "<leader>ts", "<cmd>tab split<CR>", { desc = "Tabs : Open current file in new tab (tabs)" })
+	vim.keymap.set("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Tabs : Close current tab (tabs)" })
 
 	-- git
-	vim.keymap.set("n", "<leader>gd", "<cmd>DiffviewOpen master<CR>", { desc = "Open diff vs master (git)" })
-	vim.keymap.set("n", "<leader>gx", "<cmd>DiffviewClose<CR>", { desc = "Close diffview (git)" })
+	vim.keymap.set("n", "<leader>gq", telescope.git_status, { desc = "Git : Open git status (quick overview)" })
+	vim.keymap.set("n", "<leader>gs", "<cmd>DiffviewOpen<CR>", { desc = "Git : Open git status (working tree diff)" })
 
 	local function git_commits()
 		local action_state = require("telescope.actions.state")
@@ -97,9 +103,8 @@ function M.setup()
 		"n",
 		"<leader>gc",
 		git_commits,
-		{ desc = "Browse git commits (CR=diff vs HEAD | C-h=file overview | C-o=checkout)" }
+		{ desc = "Git : Browse commits (CR=diff vs HEAD | C-h=file overview | C-o=checkout)" }
 	)
-	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "Browse git commits for this file" })
 
 	local function git_branches()
 		local action_state = require("telescope.actions.state")
@@ -111,10 +116,16 @@ function M.setup()
 					local branch = entry.value
 					local hint = "  <CR> diff to current  |  <C-o> checkout"
 					local cmd = "echo 'Recent commits:'"
-						.. " && git log --oneline --color=always -10 " .. branch
+						.. " && git log --oneline --color=always -10 "
+						.. branch
 						.. " && echo '' && echo 'Changed vs HEAD:'"
-						.. " && git diff --stat --color=always HEAD.." .. branch
-						.. " && printf '\\n" .. string.rep("-", 50) .. "\\n\\n" .. hint .. "\\n'"
+						.. " && git diff --stat --color=always HEAD.."
+						.. branch
+						.. " && printf '\\n"
+						.. string.rep("-", 50)
+						.. "\\n\\n"
+						.. hint
+						.. "\\n'"
 					return { "sh", "-c", cmd }
 				end,
 			}),
@@ -133,12 +144,16 @@ function M.setup()
 			end,
 		})
 	end
-	vim.keymap.set("n", "<leader>gb", git_branches, { desc = "Browse git branches (CR=diff vs current | C-o=checkout)" })
-	vim.keymap.set("n", "<leader>gs", "<cmd>DiffviewOpen<CR>", { desc = "Open git status / working tree diff (git)" })
+	vim.keymap.set(
+		"n",
+		"<leader>gb",
+		git_branches,
+		{ desc = "Git : Browse branches (CR=diff vs current | C-o=checkout)" }
+	)
 
-	-- history
-	vim.keymap.set("n", "<leader>hr", "<cmd>DiffviewFileHistory<CR>", { desc = "View repo history (history)" })
-	vim.keymap.set("n", "<leader>hf", "<cmd>DiffviewFileHistory %<CR>", { desc = "View file history (history)" })
+	--  git history
+	vim.keymap.set("n", "<leader>hr", "<cmd>DiffviewFileHistory<CR>", { desc = "Git-History: View repo history" })
+	vim.keymap.set("n", "<leader>hf", "<cmd>DiffviewFileHistory %<CR>", { desc = "Git-History: View file history " })
 
 	local function history_diff_range()
 		local action_state = require("telescope.actions.state")
@@ -179,7 +194,7 @@ function M.setup()
 			end,
 		})
 	end
-	vim.keymap.set("n", "<leader>hd", history_diff_range, { desc = "View diff between 2 commits (history)" })
+	vim.keymap.set("n", "<leader>hd", history_diff_range, { desc = "Git-History : View diff between 2 commits" })
 
 	-- debug
 	vim.keymap.set("n", "<leader>db", function()
@@ -221,19 +236,6 @@ function M.setup()
 	vim.keymap.set("n", "<leader>dw", function()
 		require("dapui").elements.watches.add(vim.fn.expand("<cword>"))
 	end, { desc = "Debug : Add word under cursor to watch" })
-
-	-- tabs
-	vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New empty tab (tabs)" })
-	vim.keymap.set("n", "<leader>ts", "<cmd>tab split<CR>", { desc = "Open current file in new tab (tabs)" })
-	vim.keymap.set("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Close current tab (tabs)" })
-
-	-- window picker
-	vim.keymap.set("n", "<leader>w", function()
-		local win = require("window-picker").pick_window()
-		if win then
-			vim.api.nvim_set_current_win(win)
-		end
-	end, { desc = "Pick window to jump to" })
 
 	-- ! keymaps used inside modules like 'telescope' or 'nvim-tree' are define in the related plugin-files
 end
