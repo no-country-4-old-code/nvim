@@ -54,6 +54,8 @@ function M.setup()
 	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Navigation : Browse copy & paste registers" })
 	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Navigation : Browse open buffers" })
 	vim.keymap.set("n", "<leader>w", pick_window_to_jump, { desc = "Navigation : Pick window to jump to" })
+	vim.keymap.set("n", "<C-o>", "<C-o>", { desc = "Navigation : Jump back to previous position" })
+	vim.keymap.set("n", "<C-i>", "<C-i>", { desc = "Navigation : Jump forwad again" })
 
 	-- code navigation via (lsp)
 	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "LSP : Browse diagnostics (linter)" })
