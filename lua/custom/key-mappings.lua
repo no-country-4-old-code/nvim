@@ -100,7 +100,40 @@ function M.setup()
 		{ desc = "Browse git commits (CR=diff vs HEAD | C-h=file overview | C-o=checkout)" }
 	)
 	vim.keymap.set("n", "<leader>gf", telescope.git_bcommits, { desc = "Browse git commits for this file" })
-	vim.keymap.set("n", "<leader>gb", telescope.git_branches, { desc = "Browse git branches" })
+
+	local function git_branches()
+		local action_state = require("telescope.actions.state")
+		local actions = require("telescope.actions")
+		local previewers = require("telescope.previewers")
+		telescope.git_branches({
+			previewer = previewers.new_termopen_previewer({
+				get_command = function(entry)
+					local branch = entry.value
+					local hint = "  <CR> diff to current  |  <C-o> checkout"
+					local cmd = "echo 'Recent commits:'"
+						.. " && git log --oneline --color=always -10 " .. branch
+						.. " && echo '' && echo 'Changed vs HEAD:'"
+						.. " && git diff --stat --color=always HEAD.." .. branch
+						.. " && printf '\\n" .. string.rep("-", 50) .. "\\n\\n" .. hint .. "\\n'"
+					return { "sh", "-c", cmd }
+				end,
+			}),
+			attach_mappings = function(prompt_bufnr, map)
+				map({ "i", "n" }, "<CR>", function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+					vim.cmd("DiffviewOpen " .. selection.value)
+				end)
+				map({ "i", "n" }, "<C-o>", function()
+					local selection = action_state.get_selected_entry()
+					actions.close(prompt_bufnr)
+					vim.cmd("Git checkout " .. selection.value)
+				end)
+				return true
+			end,
+		})
+	end
+	vim.keymap.set("n", "<leader>gb", git_branches, { desc = "Browse git branches (CR=diff vs current | C-o=checkout)" })
 	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
 
 	-- debug
