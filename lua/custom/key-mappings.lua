@@ -53,6 +53,10 @@ function M.setup()
 	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "LSP : Callstack up (who calls this)" })
 	vim.keymap.set("n", "<leader>co", telescope.lsp_outgoing_calls, { desc = "LSP : Callstack down (what this calls)" })
 	vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { desc = "LSP : Rename symbol" })
+	vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "LSP : Code actions" })
+	vim.keymap.set("n", "<leader>cm", vim.lsp.buf.implementation, { desc = "LSP : Jump to implementation" })
+	vim.keymap.set("n", "<leader>ck", vim.lsp.buf.hover, { desc = "LSP : Hover docs of var" })
+	vim.keymap.set("i", "<leader>ck", vim.lsp.buf.signature_help, { desc = "LSP : Show Fn-Signature help" })
 
 	-- tabs
 	vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "Tabs : New empty tab (tabs)" })
