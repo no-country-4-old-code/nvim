@@ -130,8 +130,20 @@ function M.setup()
 	end, { desc = "Debug : Add word under cursor to watch" })
 end
 
+-- keymaps for gitsigns (buffer-local, set on attach)
+function M.gitsigns_on_attach(bufnr)
+	-- a really speed up during working on files
+	local gs = require("gitsigns")
+	vim.keymap.set("n", "f", gs.next_hunk, { buffer = bufnr, desc = "Git : Jump to next hunk" })
+	vim.keymap.set("n", "t", gs.prev_hunk, { buffer = bufnr, desc = "Git : Jump to previous hunk" })
+end
+
 -- keymaps for diffview only
 M.diffview_view_keymaps = {
+	-- hunk navigation
+	{ "n", "f", "]c", { desc = "Git-Diff : Jump to next hunk" } },
+	{ "n", "t", "[c", { desc = "Git-Diff : Jump to previous hunk" } },
+
 	-- merging changes
 	{ "n", "<leader>gp", "<cmd>diffput<CR>", { desc = "Git-Diff : Push hunk to other panel" } },
 	{ "v", "<leader>gp", ":diffput<CR>", { desc = "Git-Diff : Push selected lines to other panel" } },

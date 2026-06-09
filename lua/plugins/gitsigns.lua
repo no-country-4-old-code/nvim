@@ -9,5 +9,6 @@ return {
 			topdelete = { text = "‾" },
 			changedelete = { text = "~" },
 		},
+		on_attach = require("custom.key-mappings").gitsigns_on_attach,
 	},
 }
