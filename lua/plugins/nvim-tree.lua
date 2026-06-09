@@ -42,8 +42,8 @@ return {
 
 			-- custom mappings
 			vim.keymap.set("n", "h", api.tree.change_root_to_parent, opts("Open parent"))
-			vim.keymap.set("n", "l", api.tree.change_root_to_node, opts("Close parent"))
-			vim.keymap.set("n", "<Space>", api.node.open.preview, opts("Preview file"))
+			vim.keymap.set("n", "c", api.tree.change_root_to_node, opts("Close parent"))
+			vim.keymap.set("n", "l", api.node.open.preview, opts("Preview file"))
 			vim.keymap.set("n", "<Down>", function()
 				scroll_preview(1)
 			end, opts("Scroll preview down"))
