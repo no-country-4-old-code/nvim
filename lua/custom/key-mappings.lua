@@ -4,6 +4,8 @@ function M.setup()
 	-- modules
 	local telescope = require("telescope.builtin")
 	local git = require("plugins.extensions.telescope.git")
+	local dap = require("dap")
+	local dapui = require("dapui")
 
 	-- helper
 	local function show_keymaps()
@@ -70,34 +72,34 @@ function M.setup()
 
 	-- debug
 	vim.keymap.set("n", "<leader>db", function()
-		require("dap").toggle_breakpoint()
+		dap.toggle_breakpoint()
 	end, { desc = "Debug : Toggle breakpoint" })
 	vim.keymap.set("n", "<leader>dc", function()
-		require("dap").continue()
+		dap.continue()
 	end, { desc = "Debug : Continue / start" })
 	vim.keymap.set("n", "<leader>dn", function()
-		require("dap").step_over()
+		dap.step_over()
 	end, { desc = "Debug : Step over" })
 	vim.keymap.set("n", "<leader>di", function()
-		require("dap").step_into()
+		dap.step_into()
 	end, { desc = "Debug : Step into" })
 	vim.keymap.set("n", "<leader>do", function()
-		require("dap").step_out()
+		dap.step_out()
 	end, { desc = "Debug : Step out" })
 	vim.keymap.set("n", "<leader>dx", function()
-		require("dap").terminate()
+		dap.terminate()
 	end, { desc = "Debug : Terminate" })
 	vim.keymap.set("n", "<leader>dp", function()
-		require("dap").pause()
+		dap.pause()
 	end, { desc = "Debug : Pause" })
 	vim.keymap.set("n", "<leader>dr", function()
-		require("dap").restart()
+		dap.restart()
 	end, { desc = "Debug : Restart" })
 	vim.keymap.set("n", "<leader>du", function()
-		require("dapui").toggle()
+		dapui.toggle()
 	end, { desc = "Debug : Toggle UI" })
 	vim.keymap.set("n", "<leader>de", function()
-		require("dapui").eval()
+		dapui.eval()
 	end, { desc = "Debug : Evaluate expression" })
 	vim.keymap.set(
 		"n",
@@ -106,10 +108,53 @@ function M.setup()
 		{ desc = "Debug : In side windows use e(dit), t(oggle), o(pen), c(ode), d(elete) " }
 	)
 	vim.keymap.set("n", "<leader>dw", function()
-		require("dapui").elements.watches.add(vim.fn.expand("<cword>"))
+		dapui.elements.watches.add(vim.fn.expand("<cword>"))
 	end, { desc = "Debug : Add word under cursor to watch" })
 
-	-- ! keymaps used inside modules like 'telescope' or 'nvim-tree' are define in the related plugin-files
+	-- ! keymaps used inside modules like 'telescope' or 'nvim-tree' are define in the related plugin-files,
+	-- ! except for diffview view keymaps which are defined below as M.diffview_view_keymaps
 end
+
+-- Diffview view-buffer keymaps (applied by diffview.nvim, see lua/plugins/diffview.lua).
+-- Buffer-local to diffview views; kept here so all <leader>g* git maps live in one place.
+M.diffview_view_keymaps = {
+	-- merging changes
+	{ "n", "<leader>gp", "<cmd>diffput<CR>", { desc = "Git-Diff : Push hunk to other panel" } },
+	{ "v", "<leader>gp", ":diffput<CR>", { desc = "Git-Diff : Push selected lines to other panel" } },
+	{ "n", "<leader>gl", "<cmd>diffget<CR>", { desc = "Git-Diff : Get hunk from other panel" } },
+	{ "v", "<leader>gl", ":diffget<CR>", { desc = "Git-Diff : Get selected lines from other panel" } },
+
+	-- git staging (gitsigns)
+	{
+		"n",
+		"<leader>ga",
+		function()
+			require("gitsigns").stage_hunk()
+		end,
+		{ desc = "Git-Changes : Stage hunk (git)" },
+	},
+	{
+		"v",
+		"<leader>ga",
+		function()
+			local l1 = vim.fn.line("'<")
+			local l2 = vim.fn.line("'>")
+			require("gitsigns").stage_hunk({ l1, l2 })
+		end,
+		{ desc = "Git-Changes : Stage selected lines (git)" },
+	},
+	{
+		"n",
+		"<leader>gu",
+		function()
+			require("gitsigns").undo_stage_hunk()
+		end,
+		{ desc = "Git-Changes : Unstage hunk (git)" },
+	},
+
+	-- folds
+	{ "n", "zo", "zo", { desc = "Open fold" } },
+	{ "n", "zc", "zc", { desc = "Close fold" } },
+}
 
 return M
