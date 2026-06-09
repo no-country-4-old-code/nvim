@@ -34,6 +34,15 @@ function M.setup()
 		end
 	end
 
+	local lsp_border = { "┏", "━", "┓", "┃", "┛", "━", "┗", "┃" }
+	local function lsp_hover()
+		vim.lsp.buf.hover({ border = lsp_border })
+	end
+
+	local function lsp_signature()
+		vim.lsp.buf.signature_help({ border = lsp_border })
+	end
+
 	-- general
 	vim.keymap.set("n", "<leader>h", show_keymaps, { desc = "Show keymaps" })
 
@@ -55,8 +64,8 @@ function M.setup()
 	vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { desc = "LSP : Rename symbol" })
 	vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "LSP : Code actions" })
 	vim.keymap.set("n", "<leader>cm", vim.lsp.buf.implementation, { desc = "LSP : Jump to implementation" })
-	vim.keymap.set("n", "<leader>ck", vim.lsp.buf.hover, { desc = "LSP : Hover docs of var" })
-	vim.keymap.set("i", "<leader>ck", vim.lsp.buf.signature_help, { desc = "LSP : Show Fn-Signature help" })
+	vim.keymap.set("n", "<leader>ck", lsp_hover, { desc = "LSP : Hover docs of var" })
+	vim.keymap.set("i", "<leader>ck", lsp_signature, { desc = "LSP : Show Fn-Signature help" })
 
 	-- tabs
 	vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "Tabs : New empty tab (tabs)" })

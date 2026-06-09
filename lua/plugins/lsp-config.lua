@@ -11,6 +11,15 @@ return {
 				virtual_text = true,
 			})
 
+			local function set_lsp_float_highlights()
+				vim.api.nvim_set_hl(0, "FloatBorder", { fg = "#ff69b4", bold = true })
+				vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
+			end
+			set_lsp_float_highlights()
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				callback = set_lsp_float_highlights,
+			})
+
 			-- Rust
 			on_attach =
 				function(client, bufnr)
