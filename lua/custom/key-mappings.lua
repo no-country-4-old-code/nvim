@@ -136,6 +136,51 @@ function M.setup()
 	vim.keymap.set("n", "<leader>gb", git_branches, { desc = "Browse git branches (CR=diff vs current | C-o=checkout)" })
 	vim.keymap.set("n", "<leader>gs", telescope.git_status, { desc = "Browse git status" })
 
+	-- history
+	vim.keymap.set("n", "<leader>hr", "<cmd>DiffviewFileHistory<CR>", { desc = "View repo history (history)" })
+	vim.keymap.set("n", "<leader>hf", "<cmd>DiffviewFileHistory %<CR>", { desc = "View file history (history)" })
+
+	local function history_diff_range()
+		local action_state = require("telescope.actions.state")
+		local actions = require("telescope.actions")
+		local previewers = require("telescope.previewers")
+
+		telescope.git_commits({
+			prompt_title = "Diff Range: FROM commit",
+			previewer = previewers.new_termopen_previewer({
+				get_command = function(entry)
+					return { "sh", "-c", "git show --stat --color=always " .. entry.value }
+				end,
+			}),
+			attach_mappings = function(prompt_bufnr, map)
+				map({ "i", "n" }, "<CR>", function()
+					local from = action_state.get_selected_entry().value
+					actions.close(prompt_bufnr)
+					vim.schedule(function()
+						telescope.git_commits({
+							prompt_title = "Diff Range: TO commit (from " .. from:sub(1, 7) .. ")",
+							previewer = previewers.new_termopen_previewer({
+								get_command = function(entry)
+									return { "sh", "-c", "git show --stat --color=always " .. entry.value }
+								end,
+							}),
+							attach_mappings = function(prompt_bufnr2, map2)
+								map2({ "i", "n" }, "<CR>", function()
+									local to = action_state.get_selected_entry().value
+									actions.close(prompt_bufnr2)
+									vim.cmd("DiffviewOpen " .. from .. ".." .. to)
+								end)
+								return true
+							end,
+						})
+					end)
+				end)
+				return true
+			end,
+		})
+	end
+	vim.keymap.set("n", "<leader>hd", history_diff_range, { desc = "View diff between 2 commits (history)" })
+
 	-- debug
 	vim.keymap.set("n", "<leader>db", function()
 		require("dap").toggle_breakpoint()
@@ -176,6 +221,11 @@ function M.setup()
 	vim.keymap.set("n", "<leader>dw", function()
 		require("dapui").elements.watches.add(vim.fn.expand("<cword>"))
 	end, { desc = "Debug : Add word under cursor to watch" })
+
+	-- tabs
+	vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "New empty tab (tabs)" })
+	vim.keymap.set("n", "<leader>ts", "<cmd>tab split<CR>", { desc = "Open current file in new tab (tabs)" })
+	vim.keymap.set("n", "<leader>tx", "<cmd>tabclose<CR>", { desc = "Close current tab (tabs)" })
 
 	-- window picker
 	vim.keymap.set("n", "<leader>w", function()
