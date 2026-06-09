@@ -24,6 +24,13 @@ function M.setup()
 		tree.tree.toggle({ find_file = true, focus = true })
 	end
 
+	local function pick_window_to_jump()
+		local win = require("window-picker").pick_window()
+		if win then
+			vim.api.nvim_set_current_win(win)
+		end
+	end
+
 	-- general
 	vim.keymap.set("n", "<leader>h", show_keymaps, { desc = "Show keymaps" })
 
@@ -34,12 +41,7 @@ function M.setup()
 	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "Navigation : Search in file contents" })
 	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Navigation : Browse copy & paste registers" })
 	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Navigation : Browse open buffers" })
-	vim.keymap.set("n", "<leader>w", function()
-		local win = require("window-picker").pick_window()
-		if win then
-			vim.api.nvim_set_current_win(win)
-		end
-	end, { desc = "Navigation : Pick window to jump to" })
+	vim.keymap.set("n", "<leader>w", pick_window_to_jump, { desc = "Navigation : Pick window to jump to" })
 
 	-- code navigation via (lsp)
 	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "LSP : Browse diagnostics (linter)" })
