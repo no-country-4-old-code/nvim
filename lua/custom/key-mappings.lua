@@ -27,6 +27,10 @@ function M.setup()
 		tree.tree.toggle({ find_file = true, focus = true })
 	end
 
+	local function grep_word_under_cursor()
+		telescope.live_grep({ default_text = vim.fn.expand("<cWORD>") })
+	end
+
 	local function pick_window_to_jump()
 		local win = require("window-picker").pick_window()
 		if win then
@@ -51,6 +55,7 @@ function M.setup()
 	vim.keymap.set("n", "<leader>fj", telescope.jumplist, { desc = "Navigation : Browse jump history" })
 	vim.keymap.set("n", "<leader>ff", find_files, { desc = "Navigation : Search by file name" })
 	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "Navigation : Search in file contents" })
+	vim.keymap.set("n", "<leader>fG", grep_word_under_cursor, { desc = "Navigation : Search word under cursor in file contents" })
 	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Navigation : Browse copy & paste registers" })
 	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Navigation : Browse open buffers" })
 	vim.keymap.set("n", "<leader>w", pick_window_to_jump, { desc = "Navigation : Pick window to jump to" })
