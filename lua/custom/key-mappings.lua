@@ -55,7 +55,12 @@ function M.setup()
 	vim.keymap.set("n", "<leader>fj", telescope.jumplist, { desc = "Navigation : Browse jump history" })
 	vim.keymap.set("n", "<leader>ff", find_files, { desc = "Navigation : Search by file name" })
 	vim.keymap.set("n", "<leader>fg", telescope.live_grep, { desc = "Navigation : Search in file contents" })
-	vim.keymap.set("n", "<leader>fG", grep_word_under_cursor, { desc = "Navigation : Search word under cursor in file contents" })
+	vim.keymap.set(
+		"n",
+		"<leader>fG",
+		grep_word_under_cursor,
+		{ desc = "Navigation : Search word under cursor in file contents" }
+	)
 	vim.keymap.set("n", "<leader>fr", telescope.registers, { desc = "Navigation : Browse copy & paste registers" })
 	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Navigation : Browse open buffers" })
 	vim.keymap.set("n", "<leader>w", pick_window_to_jump, { desc = "Navigation : Pick window to jump to" })
@@ -68,8 +73,26 @@ function M.setup()
 	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "LSP : Browse diagnostics (linter)" })
 	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "LSP : Go to definition" })
 	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "LSP : Find usages / references" })
-	vim.keymap.set("n", "<leader>ci", telescope.lsp_incoming_calls, { desc = "LSP : Callstack up (who calls this)" })
-	vim.keymap.set("n", "<leader>co", telescope.lsp_outgoing_calls, { desc = "LSP : Callstack down (what this calls)" })
+	vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { desc = "LSP : Rename symbol" })
+	vim.keymap.set(
+		"n",
+		"<leader>ci",
+		"<cmd>Trouble lsp_incoming_calls toggle<CR>",
+		{ desc = "LSP : References (who calls this)" }
+	)
+	vim.keymap.set(
+		"n",
+		"<leader>co",
+		"<cmd>Trouble lsp_outgoing_calls toggle<CR>",
+		{ desc = "LSP : References (what this calls)" }
+	)
+	vim.keymap.set(
+		"n",
+		"<leader>cs",
+		"<cmd>Trouble symbols toggle focus=true<CR>",
+		{ desc = "LSP : Symbol outline of current file" }
+	)
+	vim.keymap.set("n", "<leader>cg", "<cmd>CDeps<CR>", { desc = "C/C++ : Folder dependency graph" })
 	vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { desc = "LSP : Rename symbol" })
 	vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "LSP : Code actions" })
 	vim.keymap.set("n", "<leader>cm", vim.lsp.buf.implementation, { desc = "LSP : Jump to implementation" })
