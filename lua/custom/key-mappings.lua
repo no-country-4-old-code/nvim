@@ -73,18 +73,21 @@ function M.setup()
 	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "LSP : Browse diagnostics (linter)" })
 	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "LSP : Go to definition" })
 	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "LSP : Find usages / references" })
-	vim.keymap.set(
-		"n",
-		"<leader>ci",
-		"<cmd>Trouble lsp_incoming_calls toggle<CR>",
-		{ desc = "LSP : References (who calls this)" }
-	)
-	vim.keymap.set(
-		"n",
-		"<leader>co",
-		"<cmd>Trouble lsp_outgoing_calls toggle<CR>",
-		{ desc = "LSP : References (what this calls)" }
-	)
+	local ct = require("plugins.extensions.calltree")
+	local function call_then_focus(fn)
+		return function()
+			fn()
+			local tries = 0
+			local function try()
+				tries = tries + 1
+				if ct.focus_panel() then return end
+				if tries < 50 then vim.defer_fn(try, 20) end
+			end
+			try()
+		end
+	end
+	vim.keymap.set("n", "<leader>ci", call_then_focus(vim.lsp.buf.incoming_calls), { desc = "LSP : Incoming calls (who calls this)" })
+	vim.keymap.set("n", "<leader>co", call_then_focus(vim.lsp.buf.outgoing_calls), { desc = "LSP : Outgoing calls (what this calls)" })
 	vim.keymap.set(
 		"n",
 		"<leader>cs",
