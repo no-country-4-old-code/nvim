@@ -6,6 +6,7 @@ return {
 			focus = true,
 			win = {
 				position = "left",
+				size = 50,
 			},
 			keys = {
 				["<esc>"] = "close",
