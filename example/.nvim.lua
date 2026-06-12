@@ -2,20 +2,14 @@
 -- Copy this file to the root of your project and adjust to your needs.
 -- Neovim will prompt you to trust it on first load (once per file change).
 
--- Load project-local LSP configuration
-local ok, lspconfig = pcall(require, "lspconfig")
-if not ok then
-	return
-end
-
 --  Configure LSP server for C/C++
-lspconfig.clangd.setup({
+vim.lsp.config("clangd", {
 	cmd = {
-		"clangd", -- compiler
-		"--compile-commands-dir=build", -- build folder to search for compile_commands.json
-		"--clang-tidy", -- inline warnings
-		"--background-index", -- needed for go-to-definition etc.
-		"--completion-style=detailed", -- needed for completion-style
+		"clangd",
+		"--compile-commands-dir=build",
+		"--clang-tidy",
+		"--background-index",
+		"--completion-style=detailed",
 	},
 })
 

@@ -3,7 +3,21 @@ return {
 		"folke/trouble.nvim",
 		cmd = "Trouble",
 		opts = {
-			focus = true, -- jump into the tree window when it opens
+			focus = true,
+			win = {
+				position = "left",
+			},
+			keys = {
+				["<esc>"] = "close",
+				["<cr>"] = "jump_close",
+			},
+			modes = {
+				symbols = {
+					win = {
+						position = "left",
+					},
+				},
+			},
 		},
 	},
 }

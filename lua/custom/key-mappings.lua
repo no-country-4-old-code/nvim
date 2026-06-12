@@ -73,7 +73,6 @@ function M.setup()
 	vim.keymap.set("n", "<leader>cl", telescope.diagnostics, { desc = "LSP : Browse diagnostics (linter)" })
 	vim.keymap.set("n", "<leader>cd", telescope.lsp_definitions, { desc = "LSP : Go to definition" })
 	vim.keymap.set("n", "<leader>cu", telescope.lsp_references, { desc = "LSP : Find usages / references" })
-	vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { desc = "LSP : Rename symbol" })
 	vim.keymap.set(
 		"n",
 		"<leader>ci",
@@ -97,7 +96,7 @@ function M.setup()
 	vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "LSP : Code actions" })
 	vim.keymap.set("n", "<leader>cm", vim.lsp.buf.implementation, { desc = "LSP : Jump to implementation" })
 	vim.keymap.set("n", "<leader>ck", lsp_hover, { desc = "LSP : Hover docs of var" })
-	vim.keymap.set("i", "<leader>ck", lsp_signature, { desc = "LSP : Show Fn-Signature help" })
+	vim.keymap.set("n", "<leader>cf", lsp_signature, { desc = "LSP : Show Fn-Signature help" })
 
 	-- tabs
 	vim.keymap.set("n", "<leader>tn", "<cmd>tabnew<CR>", { desc = "Tabs : New empty tab (tabs)" })
