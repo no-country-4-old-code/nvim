@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Repo Analysis</title>
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Roboto", "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      background: #F5F7FA;
+      color: #212121;
+      min-height: 100vh;
+    }
+
+    /* ── Keyframe animations ─────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.88); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes tooltipFade {
+      from { opacity: 0; transform: scale(0.96) translateY(4px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+    @keyframes barGrow {
+      from { width: 0 !important; }
+    }
+
+    .anim-up {
+      animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ── App bar ──────────────────────────────────────────────────────── */
+    .app-bar {
+      background: linear-gradient(135deg, #1565C0, #1976D2);
+      color: #fff;
+      height: 60px;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .app-bar__logo {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      opacity: 0.97;
+    }
+    .app-bar__sep { opacity: 0.35; font-size: 18px; }
+    .app-bar__repo {
+      font-size: 13px;
+      opacity: 0.80;
+      max-width: 480px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .app-bar__right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .chip-mono {
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 3px 9px;
+      font-family: "Roboto Mono", "Consolas", monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Page layout ─────────────────────────────────────────────────── */
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.07);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.13), 0 2px 4px rgba(0,0,0,0.09);
+    }
+    .card__hdr {
+      padding: 14px 22px;
+      border-bottom: 1px solid #EEF2F7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card__title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1565C0;
+    }
+    .card__body { padding: 20px 22px; }
+
+    /* ── Summary grid ─────────────────────────────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Tooling chips ────────────────────────────────────────────────── */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .tchip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 14px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .tchip--ok { background: #E8F5E9; color: #2E7D32; }
+    .tchip--no { background: #FAFAFA; color: #9E9E9E; border: 1px solid #E0E0E0; }
+    .tchip__dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tchip--ok .tchip__dot { background: #43A047; }
+    .tchip--no .tchip__dot { background: #BDBDBD; }
+
+    /* ── Stat block ───────────────────────────────────────────────────── */
+    .stat-row { display: flex; gap: 28px; margin-top: 14px; }
+    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat__lbl {
+      font-size: 10px;
+      color: #9E9E9E;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stat__val {
+      font-size: 28px;
+      font-weight: 300;
+      color: #1565C0;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    /* ── Language bar ─────────────────────────────────────────────────── */
+    .lang-bar { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+    .lang-row {
+      display: grid;
+      grid-template-columns: 96px 1fr 44px;
+      align-items: center;
+      gap: 8px;
+    }
+    .lang-name { font-size: 12px; color: #424242; text-align: right; }
+    .lang-track {
+      height: 5px;
+      background: #E3F2FD;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .lang-fill {
+      height: 100%;
+      background: #1976D2;
+      border-radius: 3px;
+      animation: barGrow 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .lang-pct { font-size: 11px; color: #9E9E9E; }
+
+    /* ── Treemap ──────────────────────────────────────────────────────── */
+    .toggle-group {
+      display: flex;
+      border: 1px solid #1976D2;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .tgl-btn {
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: #fff;
+      color: #1976D2;
+      transition: background 0.14s, color 0.14s;
+    }
+    .tgl-btn + .tgl-btn { border-left: 1px solid #1976D2; }
+    .tgl-btn.active   { background: #1976D2; color: #fff; }
+    .tgl-btn:hover:not(.active) { background: #E3F2FD; }
+
+    #treemap {
+      position: relative;
+      width: 100%;
+      height: 540px;
+      background: #EEF4FB;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .t-folder {
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-radius: 5px;
+      background: #DBEAFE;
+      overflow: hidden;
+    }
+    .t-folder__lbl {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 19px;
+      background: rgba(21,101,192,0.82);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 0 5px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .t-file {
+      position: absolute;
+      border: 1px solid rgba(255,255,255,0.40);
+      cursor: pointer;
+      overflow: hidden;
+      transition: filter 0.1s, border-color 0.1s;
+      animation: scaleIn 0.28s ease both;
+    }
+    .t-file:hover {
+      filter: brightness(0.86) saturate(1.1);
+      border-color: rgba(255,255,255,0.85);
+      z-index: 20;
+    }
+    .t-file__lbl {
+      position: absolute;
+      bottom: 3px;
+      left: 3px;
+      right: 3px;
+      font-size: 9px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+
+    /* ── Legend ───────────────────────────────────────────────────────── */
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #9E9E9E;
+    }
+    .legend-bar {
+      width: 120px;
+      height: 7px;
+      border-radius: 4px;
+      background: linear-gradient(to right, #E8F5FE, #0D47A1);
+    }
+
+    /* ── Tooltip ──────────────────────────────────────────────────────── */
+    #tooltip {
+      position: fixed;
+      z-index: 1000;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.17), 0 2px 6px rgba(0,0,0,0.10);
+      border: 1px solid #E8EEF6;
+      padding: 0;
+      pointer-events: none;
+      max-width: 310px;
+      min-width: 200px;
+      display: none;
+    }
+    #tooltip.visible { animation: tooltipFade 0.14s ease both; }
+    .tt-title {
+      padding: 11px 14px 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1565C0;
+      border-bottom: 1px solid #EEF2F7;
+      word-break: break-all;
+      line-height: 1.35;
+    }
+    .tt-body { padding: 9px 14px 11px; }
+    .tt-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+    .tt-k { color: #9E9E9E; }
+    .tt-v { color: #212121; font-weight: 500; }
+    .tt-commits {
+      margin-top: 9px;
+      padding-top: 8px;
+      border-top: 1px solid #F0F4FA;
+    }
+    .tt-commits-hdr {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #BDBDBD;
+      margin-bottom: 6px;
+    }
+    .tt-commit {
+      font-size: 11px;
+      color: #424242;
+      margin-bottom: 5px;
+      padding-left: 9px;
+      border-left: 2px solid #BBDEFB;
+      line-height: 1.45;
+    }
+    .tt-commit-date { color: #9E9E9E; font-size: 10px; }
+
+    /* ── Tables ───────────────────────────────────────────────────────── */
+    .section-wrap { margin-bottom: 22px; }
+    .sub-hdr {
+      font-size: 12px;
+      font-weight: 600;
+      color: #757575;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 18px 0 8px;
+    }
+    .tbl-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      background: #1565C0;
+      color: #fff;
+      font-weight: 500;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 9px 12px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    thead th:first-child { border-radius: 4px 0 0 0; }
+    thead th:last-child  { border-radius: 0 4px 0 0; }
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #F4F7FB;
+      color: #424242;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td {
+      background: #E8F4FF;
+      transition: background 0.1s;
+    }
+    .mono {
+      font-family: "Roboto Mono", "Consolas", monospace;
+      font-size: 11.5px;
+      color: #1565C0;
+    }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .b-blue   { background: #BBDEFB; color: #1565C0; }
+    .b-green  { background: #C8E6C9; color: #2E7D32; }
+    .b-amber  { background: #FFF8E1; color: #E65100; }
+    .b-red    { background: #FFCDD2; color: #B71C1C; }
+
+    /* ── Footer ───────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px 0 8px;
+      font-size: 11px;
+      color: #BDBDBD;
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ App bar ═══════════════════════════════════════════════════════════ -->
+<div class="app-bar">
+  <span class="app-bar__logo">⬡ repo-analyser</span>
+  <span class="app-bar__sep">|</span>
+  <span class="app-bar__repo" id="js-repo-path"></span>
+  <div class="app-bar__right">
+    <span class="chip-mono" id="js-head-sha"></span>
+    <span id="js-generated-at"></span>
+  </div>
+</div>
+
+<!-- ═══ Page ═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- Summary cards -->
+  <div class="summary-grid" id="js-summary"></div>
+
+  <!-- Treemap -->
+  <div class="card anim-up" style="animation-delay:.12s" id="js-treemap-card">
+    <div class="card__hdr">
+      <span class="card__title">Churn Map — file area ∝ LOC, colour ∝ churn rate</span>
+      <div class="toggle-group" id="js-metric-toggle">
+        <button class="tgl-btn active" data-metric="churn_per_month">Churn/mo</button>
+        <button class="tgl-btn"        data-metric="churn">Total churn</button>
+        <button class="tgl-btn"        data-metric="commits">Commits</button>
+      </div>
+    </div>
+    <div class="card__body" style="padding-bottom:16px;">
+      <div id="treemap"></div>
+      <div class="legend-row">
+        <span>Low churn</span>
+        <div class="legend-bar"></div>
+        <span>High churn</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section tables (filled by JS) -->
+  <div id="js-sections"></div>
+
+</div>
+
+<div id="tooltip"></div>
+<footer>Generated by repo-analyser</footer>
+
+<!-- ═══ Embedded data ═══════════════════════════════════════════════════════ -->
+<script id="analysis-data" type="application/json">{"meta":{"repo_path":"/home/koalmori/.config/nvim","head_commit":"91550d10dc79f11b46ab093b33d560b830708324","generated_at":"2026-06-14 12:55 UTC","params":{"section":"all","depth":2,"top":10}},"tooling":{"ci":{"present":false,"markers":[]},"tests":{"present":false,"markers":[]},"static_analysis":{"present":false,"markers":[]},"formatter":{"present":false,"markers":[]},"file_count":37,"total_loc":2069,"loc_by_language":{"Lua":1542,"Markdown":186,"Other":173,"Shell":138,"JSON":30}},"authors":{"authors":[{"author":"no-country-4-old-code <koalmori@LDED-GTXQ954.corp.draeger.global>","name":"no-country-4-old-code","email":"koalmori@LDED-GTXQ954.corp.draeger.global","commits":100,"first_commit":"2026-01-13","last_commit":"2026-06-14","loc_written":3134,"loc_net":2067,"files_touched":42,"files_touched_current":37,"pct_current_files_touched":100.0,"top_files_by_churn":[{"file":"lua/custom/key-mappings.lua","churn":834},{"file":"lua/plugins/extensions/calltree.lua","churn":383},{"file":"lua/plugins/telescope.lua","churn":327}]},{"author":"no-country-4-old-code <NoCountry4OldCode@gmail.com>","name":"no-country-4-old-code","email":"NoCountry4OldCode@gmail.com","commits":2,"first_commit":"2026-01-13","last_commit":"2026-01-13","loc_written":4,"loc_net":2,"files_touched":1,"files_touched_current":1,"pct_current_files_touched":2.7,"top_files_by_churn":[{"file":"README.md","churn":6}]}]},"stable":{"stable_files":[{"file":"lua/config/lazy.lua","last_changed":"2026-01-13","last_ts":1768306961,"commits":1,"churn":34,"loc":34},{"file":"lua/custom/tabs.lua","last_changed":"2026-01-13","last_ts":1768306961,"commits":1,"churn":11,"loc":11},{"file":"lua/plugins/tokyonight.lua","last_changed":"2026-01-13","last_ts":1768306961,"commits":1,"churn":8,"loc":8},{"file":"LICENSE-MIT","last_changed":"2026-01-13","last_ts":1768307923,"commits":1,"churn":21,"loc":21},{"file":"lua/plugins/treesitter.lua","last_changed":"2026-03-02","last_ts":1772462376,"commits":2,"churn":10,"loc":10},{"file":"lua/custom/line-numbers.lua","last_changed":"2026-03-04","last_ts":1772662172,"commits":2,"churn":35,"loc":35},{"file":"lua/plugins/completion.lua","last_changed":"2026-03-04","last_ts":1772662905,"commits":1,"churn":28,"loc":28},{"file":"tools/README.md","last_changed":"2026-04-10","last_ts":1775815929,"commits":1,"churn":6,"loc":6},{"file":"tools/zoxide/README.md","last_changed":"2026-04-10","last_ts":1775823425,"commits":1,"churn":8,"loc":8},{"file":"tools/bashrc/README.md","last_changed":"2026-04-30","last_ts":1777530784,"commits":1,"churn":13,"loc":13}],"stable_folders":[{"folder":"lua/plugins","stable_files":10,"total_loc":275,"oldest_last_change":"2026-06-14","total_churn":295},{"folder":"lua/custom","stable_files":4,"total_loc":88,"oldest_last_change":"2026-06-14","total_churn":90},{"folder":"lua/config","stable_files":1,"total_loc":34,"oldest_last_change":"2026-01-13","total_churn":34},{"folder":"LICENSE-MIT","stable_files":1,"total_loc":21,"oldest_last_change":"2026-01-13","total_churn":21},{"folder":"tools/README.md","stable_files":1,"total_loc":6,"oldest_last_change":"2026-04-10","total_churn":6},{"folder":"tools/zoxide","stable_files":1,"total_loc":8,"oldest_last_change":"2026-04-10","total_churn":8},{"folder":"tools/bashrc","stable_files":1,"total_loc":13,"oldest_last_change":"2026-04-30","total_churn":13},{"folder":"scripts/cdeps.sh","stable_files":1,"total_loc":138,"oldest_last_change":"2026-06-12","total_churn":138},{"folder":"init.lua","stable_files":1,"total_loc":20,"oldest_last_change":"2026-06-14","total_churn":24}],"total_stable_files":21},"hot":{"hot_files":[{"file":"lua/custom/key-mappings.lua","score":37,"commits":37,"distinct_authors":1,"avg_churn_per_month":167.0,"last_changed":"2026-06-14","loc":230},{"file":"lua/plugins/telescope.lua","score":15,"commits":15,"distinct_authors":1,"avg_churn_per_month":93.0,"last_changed":"2026-04-30","loc":219},{"file":"README.md","score":14,"commits":7,"distinct_authors":2,"avg_churn_per_month":32.8,"last_changed":"2026-06-05","loc":128},{"file":"lua/plugins/dap.lua","score":11,"commits":11,"distinct_authors":1,"avg_churn_per_month":184.0,"last_changed":"2026-06-05","loc":116},{"file":"lazy-lock.json","score":10,"commits":10,"distinct_authors":1,"avg_churn_per_month":11.4,"last_changed":"2026-06-12","loc":30},{"file":"lua/plugins/diffview.lua","score":9,"commits":9,"distinct_authors":1,"avg_churn_per_month":129.1,"last_changed":"2026-06-09","loc":21},{"file":"lua/plugins/nvim-tree.lua","score":6,"commits":6,"distinct_authors":1,"avg_churn_per_month":26.4,"last_changed":"2026-06-14","loc":116},{"file":"tools/bashrc/bashrc","score":5,"commits":5,"distinct_authors":1,"avg_churn_per_month":273.1,"last_changed":"2026-06-04","loc":69},{"file":"lua/plugins/lsp-config.lua","score":5,"commits":5,"distinct_authors":1,"avg_churn_per_month":16.4,"last_changed":"2026-06-14","loc":56},{"file":"tools/tmux/README.md","score":4,"commits":4,"distinct_authors":1,"avg_churn_per_month":113.0,"last_changed":"2026-05-03","loc":31}],"hot_folders":[{"folder":"lua/plugins","files":19,"total_score":75,"total_commits":75,"distinct_authors":1,"total_churn":1778,"last_changed":"2026-06-14"},{"folder":"lua/custom","files":5,"total_score":43,"total_commits":43,"distinct_authors":1,"total_churn":924,"last_changed":"2026-06-14"},{"folder":"README.md","files":1,"total_score":14,"total_commits":7,"distinct_authors":2,"total_churn":154,"last_changed":"2026-06-05"},{"folder":"lazy-lock.json","files":1,"total_score":10,"total_commits":10,"distinct_authors":1,"total_churn":56,"last_changed":"2026-06-12"},{"folder":"tools/tmux","files":2,"total_score":7,"total_commits":7,"distinct_authors":1,"total_churn":202,"last_changed":"2026-05-03"},{"folder":"tools/bashrc","files":2,"total_score":6,"total_commits":6,"distinct_authors":1,"total_churn":332,"last_changed":"2026-06-04"},{"folder":"example/.nvim.lua","files":1,"total_score":4,"total_commits":4,"distinct_authors":1,"total_churn":124,"last_changed":"2026-06-12"},{"folder":"init.lua","files":1,"total_score":4,"total_commits":4,"distinct_authors":1,"total_churn":24,"last_changed":"2026-06-14"},{"folder":"scripts/cdeps.sh","files":1,"total_score":1,"total_commits":1,"distinct_authors":1,"total_churn":138,"last_changed":"2026-06-12"},{"folder":"lua/config","files":1,"total_score":1,"total_commits":1,"distinct_authors":1,"total_churn":34,"last_changed":"2026-01-13"},{"folder":"LICENSE-MIT","files":1,"total_score":1,"total_commits":1,"distinct_authors":1,"total_churn":21,"last_changed":"2026-01-13"},{"folder":"tools/zoxide","files":1,"total_score":1,"total_commits":1,"distinct_authors":1,"total_churn":8,"last_changed":"2026-04-10"},{"folder":"tools/README.md","files":1,"total_score":1,"total_commits":1,"distinct_authors":1,"total_churn":6,"last_changed":"2026-04-10"}]},"recent":{"recent_files":[{"file":"lua/plugins/calltree.lua","last_changed":"2026-06-14","commits":3,"distinct_authors":1},{"file":"init.lua","last_changed":"2026-06-14","commits":4,"distinct_authors":1},{"file":"lua/custom/enforce-unix-eol.lua","last_changed":"2026-06-14","commits":2,"distinct_authors":1},{"file":"lua/custom/key-mappings.lua","last_changed":"2026-06-14","commits":37,"distinct_authors":1},{"file":"lua/plugins/conform.lua","last_changed":"2026-06-14","commits":2,"distinct_authors":1},{"file":"lua/plugins/lsp-config.lua","last_changed":"2026-06-14","commits":5,"distinct_authors":1},{"file":"lua/plugins/mason.lua","last_changed":"2026-06-14","commits":3,"distinct_authors":1},{"file":"lua/plugins/nvim-tree.lua","last_changed":"2026-06-14","commits":6,"distinct_authors":1},{"file":"lua/plugins/extensions/calltree.lua","last_changed":"2026-06-14","commits":3,"distinct_authors":1},{"file":"lazy-lock.json","last_changed":"2026-06-12","commits":10,"distinct_authors":1}],"recent_folders":[{"folder":"lua/plugins","files":19,"last_changed":"2026-06-14","total_commits":75},{"folder":"init.lua","files":1,"last_changed":"2026-06-14","total_commits":4},{"folder":"lua/custom","files":5,"last_changed":"2026-06-14","total_commits":43},{"folder":"lazy-lock.json","files":1,"last_changed":"2026-06-12","total_commits":10},{"folder":"example/.nvim.lua","files":1,"last_changed":"2026-06-12","total_commits":4},{"folder":"scripts/cdeps.sh","files":1,"last_changed":"2026-06-12","total_commits":1},{"folder":"README.md","files":1,"last_changed":"2026-06-05","total_commits":7},{"folder":"tools/bashrc","files":2,"last_changed":"2026-06-04","total_commits":6},{"folder":"tools/tmux","files":2,"last_changed":"2026-05-03","total_commits":7},{"folder":"tools/zoxide","files":1,"last_changed":"2026-04-10","total_commits":1}]},"file_matrix":[{"path":"lua/plugins/extensions/calltree.lua","name":"calltree.lua","folder":"lua/plugins","loc":161,"churn":383,"churn_per_month":383.0,"commits":3,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781437263,"date":"2026-06-14","subject":"refactored calltree"},{"ts":1781436526,"date":"2026-06-14","subject":"now calltree works as expected"},{"ts":1781266040,"date":"2026-06-12","subject":"add better call tree even if outgoing is not working properly at the momemnt"}]},{"path":"tools/bashrc/bashrc","name":"bashrc","folder":"tools/bashrc","loc":69,"churn":319,"churn_per_month":273.1,"commits":5,"distinct_authors":1,"last_changed":"2026-06-04","recent_commits":[{"ts":1780603308,"date":"2026-06-04","subject":"add short cut for pwd"},{"ts":1778226847,"date":"2026-05-08","subject":"adapt bashrc"},{"ts":1777655275,"date":"2026-05-01","subject":"add bashrc"}]},{"path":"lua/plugins/dap.lua","name":"dap.lua","folder":"lua/plugins","loc":116,"churn":184,"churn_per_month":184.0,"commits":11,"distinct_authors":1,"last_changed":"2026-06-05","recent_commits":[{"ts":1780664434,"date":"2026-06-05","subject":"add info"},{"ts":1780664090,"date":"2026-06-05","subject":"Enable control bar again"},{"ts":1780663982,"date":"2026-06-05","subject":"remove status bars from most of dap-ui"}]},{"path":"lua/custom/key-mappings.lua","name":"key-mappings.lua","folder":"lua/custom","loc":230,"churn":834,"churn_per_month":167.0,"commits":37,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1781266040,"date":"2026-06-12","subject":"add better call tree even if outgoing is not working properly at the momemnt"},{"ts":1781261217,"date":"2026-06-12","subject":"adapt .nvim.lua to make it fit new nvim"}]},{"path":"scripts/cdeps.sh","name":"cdeps.sh","folder":"scripts/cdeps.sh","loc":138,"churn":138,"churn_per_month":138.0,"commits":1,"distinct_authors":1,"last_changed":"2026-06-12","recent_commits":[{"ts":1781257870,"date":"2026-06-12","subject":"add trouble for seeing incoming calls and outgoing"}]},{"path":"lua/plugins/diffview.lua","name":"diffview.lua","folder":"lua/plugins","loc":21,"churn":171,"churn_per_month":129.1,"commits":9,"distinct_authors":1,"last_changed":"2026-06-09","recent_commits":[{"ts":1781028769,"date":"2026-06-09","subject":"adapt behaviour of diffview. Enter now changes focus"},{"ts":1781027700,"date":"2026-06-09","subject":"refactor diffview.lua and take functions with me"},{"ts":1781023367,"date":"2026-06-09","subject":"refactor diffview and git signs"}]},{"path":"lua/plugins/extensions/telescope/git.lua","name":"git.lua","folder":"lua/plugins","loc":120,"churn":120,"churn_per_month":120.0,"commits":1,"distinct_authors":1,"last_changed":"2026-06-09","recent_commits":[{"ts":1781025680,"date":"2026-06-09","subject":"..by extracting function to here"}]},{"path":"tools/tmux/README.md","name":"README.md","folder":"tools/tmux","loc":31,"churn":113,"churn_per_month":113.0,"commits":4,"distinct_authors":1,"last_changed":"2026-05-03","recent_commits":[{"ts":1777827428,"date":"2026-05-03","subject":"tmux: remove session , make README easier, use nvim keybindings"},{"ts":1776261576,"date":"2026-04-15","subject":"Update README.md"},{"ts":1775823055,"date":"2026-04-10","subject":"adapt README"}]},{"path":"lua/plugins/telescope.lua","name":"telescope.lua","folder":"lua/plugins","loc":219,"churn":327,"churn_per_month":93.0,"commits":15,"distinct_authors":1,"last_changed":"2026-04-30","recent_commits":[{"ts":1777550541,"date":"2026-04-30","subject":"no new tmux tab in case of diff"},{"ts":1777544212,"date":"2026-04-30","subject":"use better nvim diff view"},{"ts":1777533272,"date":"2026-04-30","subject":"refactor telescope by pulling out the diff_screen"}]},{"path":"tools/tmux/tmux.conf","name":"tmux.conf","folder":"tools/tmux","loc":83,"churn":89,"churn_per_month":89.0,"commits":3,"distinct_authors":1,"last_changed":"2026-05-03","recent_commits":[{"ts":1777827428,"date":"2026-05-03","subject":"tmux: remove session , make README easier, use nvim keybindings"},{"ts":1775822656,"date":"2026-04-10","subject":"adapt tmux.conf and also add a bin to a open up a new session"},{"ts":1775816477,"date":"2026-04-10","subject":"add tmux config with same style as nim"}]},{"path":"lua/plugins/calltree.lua","name":"calltree.lua","folder":"lua/plugins","loc":49,"churn":53,"churn_per_month":53.0,"commits":3,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781439038,"date":"2026-06-14","subject":"pin version of calltree to prevent update"},{"ts":1781436526,"date":"2026-06-14","subject":"now calltree works as expected"},{"ts":1781266040,"date":"2026-06-12","subject":"add better call tree even if outgoing is not working properly at the momemnt"}]},{"path":"lua/plugins/gitsigns.lua","name":"gitsigns.lua","folder":"lua/plugins","loc":14,"churn":42,"churn_per_month":42.0,"commits":3,"distinct_authors":1,"last_changed":"2026-06-09","recent_commits":[{"ts":1781033706,"date":"2026-06-09","subject":"add jump forward backward to changed git hunks via f and t"},{"ts":1781023367,"date":"2026-06-09","subject":"refactor diffview and git signs"},{"ts":1780995045,"date":"2026-06-09","subject":"add gitsigns and some more keymaps. Now working with git under nvim becomes way easier"}]},{"path":"example/.nvim.lua","name":".nvim.lua","folder":"example/.nvim.lua","loc":50,"churn":124,"churn_per_month":37.1,"commits":4,"distinct_authors":1,"last_changed":"2026-06-12","recent_commits":[{"ts":1781261217,"date":"2026-06-12","subject":"adapt .nvim.lua to make it fit new nvim"},{"ts":1781253030,"date":"2026-06-12","subject":"improve .nvim.lua"},{"ts":1780904064,"date":"2026-06-08","subject":"add shortcut for faster debugging"}]},{"path":"lua/config/lazy.lua","name":"lazy.lua","folder":"lua/config","loc":34,"churn":34,"churn_per_month":34.0,"commits":1,"distinct_authors":1,"last_changed":"2026-01-13","recent_commits":[{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"lua/plugins/window-picker.lua","name":"window-picker.lua","folder":"lua/plugins","loc":21,"churn":33,"churn_per_month":33.0,"commits":2,"distinct_authors":1,"last_changed":"2026-06-05","recent_commits":[{"ts":1780660550,"date":"2026-06-05","subject":"move keymap for window picker to key-mappings"},{"ts":1780660444,"date":"2026-06-05","subject":"add window picker for faster moving between multiple windows"}]},{"path":"README.md","name":"README.md","folder":"README.md","loc":128,"churn":154,"churn_per_month":32.8,"commits":7,"distinct_authors":2,"last_changed":"2026-06-05","recent_commits":[{"ts":1780644243,"date":"2026-06-05","subject":"add used tools to README"},{"ts":1772467602,"date":"2026-03-02","subject":"add help screen to show keycommands"},{"ts":1772467162,"date":"2026-03-02","subject":"Add example for project init + extend Readme"}]},{"path":"lua/custom/dep-graph.lua","name":"dep-graph.lua","folder":"lua/custom","loc":32,"churn":32,"churn_per_month":32.0,"commits":1,"distinct_authors":1,"last_changed":"2026-06-12","recent_commits":[{"ts":1781257870,"date":"2026-06-12","subject":"add trouble for seeing incoming calls and outgoing"}]},{"path":"lua/plugins/completion.lua","name":"completion.lua","folder":"lua/plugins","loc":28,"churn":28,"churn_per_month":28.0,"commits":1,"distinct_authors":1,"last_changed":"2026-03-04","recent_commits":[{"ts":1772662905,"date":"2026-03-04","subject":"add auto completion feature"}]},{"path":"lua/plugins/nvim-tree.lua","name":"nvim-tree.lua","folder":"lua/plugins","loc":116,"churn":132,"churn_per_month":26.4,"commits":6,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1781437746,"date":"2026-06-14","subject":"add scoped file grep when in file tree"},{"ts":1781028951,"date":"2026-06-09","subject":"adapting behavior of nvim-tree so that is similiar to file panle in diffview"}]},{"path":"lua/plugins/trouble.lua","name":"trouble.lua","folder":"lua/plugins","loc":24,"churn":26,"churn_per_month":26.0,"commits":3,"distinct_authors":1,"last_changed":"2026-06-12","recent_commits":[{"ts":1781261413,"date":"2026-06-12","subject":"bigger window for trouble stuff"},{"ts":1781261217,"date":"2026-06-12","subject":"adapt .nvim.lua to make it fit new nvim"},{"ts":1781257870,"date":"2026-06-12","subject":"add trouble for seeing incoming calls and outgoing"}]},{"path":"lua/plugins/lualine.lua","name":"lualine.lua","folder":"lua/plugins","loc":93,"churn":109,"churn_per_month":23.2,"commits":3,"distinct_authors":1,"last_changed":"2026-06-05","recent_commits":[{"ts":1780663982,"date":"2026-06-05","subject":"remove status bars from most of dap-ui"},{"ts":1772465649,"date":"2026-03-02","subject":"improve tabs"},{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"lua/custom/line-numbers.lua","name":"line-numbers.lua","folder":"lua/custom","loc":35,"churn":35,"churn_per_month":21.1,"commits":2,"distinct_authors":1,"last_changed":"2026-03-04","recent_commits":[{"ts":1772662172,"date":"2026-03-04","subject":"make sure line numbers does not change when entering insert mode"},{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"LICENSE-MIT","name":"LICENSE-MIT","folder":"LICENSE-MIT","loc":21,"churn":21,"churn_per_month":21.0,"commits":1,"distinct_authors":1,"last_changed":"2026-01-13","recent_commits":[{"ts":1768307923,"date":"2026-01-13","subject":"add LICENSE"}]},{"path":"lua/plugins/lint.lua","name":"lint.lua","folder":"lua/plugins","loc":21,"churn":21,"churn_per_month":21.0,"commits":1,"distinct_authors":1,"last_changed":"2026-06-08","recent_commits":[{"ts":1780904753,"date":"2026-06-08","subject":"add linter (cppcheck) every time I save"}]},{"path":"lua/plugins/lsp-config.lua","name":"lsp-config.lua","folder":"lua/plugins","loc":56,"churn":82,"churn_per_month":16.4,"commits":5,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1781031192,"date":"2026-06-09","subject":"add a pink bold border to the lsp hover boxes"},{"ts":1772663689,"date":"2026-03-04","subject":"No more linter symbols on the side. Instead messages and underlines"}]},{"path":"tools/bashrc/README.md","name":"README.md","folder":"tools/bashrc","loc":13,"churn":13,"churn_per_month":13.0,"commits":1,"distinct_authors":1,"last_changed":"2026-04-30","recent_commits":[{"ts":1777530784,"date":"2026-04-30","subject":"add bashrc under source control"}]},{"path":"lazy-lock.json","name":"lazy-lock.json","folder":"lazy-lock.json","loc":30,"churn":56,"churn_per_month":11.4,"commits":10,"distinct_authors":1,"last_changed":"2026-06-12","recent_commits":[{"ts":1781266040,"date":"2026-06-12","subject":"add better call tree even if outgoing is not working properly at the momemnt"},{"ts":1781257870,"date":"2026-06-12","subject":"add trouble for seeing incoming calls and outgoing"},{"ts":1780995045,"date":"2026-06-09","subject":"add gitsigns and some more keymaps. Now working with git under nvim becomes way easier"}]},{"path":"lua/custom/tabs.lua","name":"tabs.lua","folder":"lua/custom","loc":11,"churn":11,"churn_per_month":11.0,"commits":1,"distinct_authors":1,"last_changed":"2026-01-13","recent_commits":[{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"lua/plugins/tokyonight.lua","name":"tokyonight.lua","folder":"lua/plugins","loc":8,"churn":8,"churn_per_month":8.0,"commits":1,"distinct_authors":1,"last_changed":"2026-01-13","recent_commits":[{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"tools/zoxide/README.md","name":"README.md","folder":"tools/zoxide","loc":8,"churn":8,"churn_per_month":8.0,"commits":1,"distinct_authors":1,"last_changed":"2026-04-10","recent_commits":[{"ts":1775823425,"date":"2026-04-10","subject":"add zoxide description to tools"}]},{"path":"lua/plugins/treesitter.lua","name":"treesitter.lua","folder":"lua/plugins","loc":10,"churn":10,"churn_per_month":6.3,"commits":2,"distinct_authors":1,"last_changed":"2026-03-02","recent_commits":[{"ts":1772462376,"date":"2026-03-02","subject":"add go to definition / reference / usages / call-stack stuff"},{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"tools/README.md","name":"README.md","folder":"tools/README.md","loc":6,"churn":6,"churn_per_month":6.0,"commits":1,"distinct_authors":1,"last_changed":"2026-04-10","recent_commits":[{"ts":1775815929,"date":"2026-04-10","subject":"add tools fodler"}]},{"path":"init.lua","name":"init.lua","folder":"init.lua","loc":20,"churn":24,"churn_per_month":4.8,"commits":4,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1781257870,"date":"2026-06-12","subject":"add trouble for seeing incoming calls and outgoing"},{"ts":1772467162,"date":"2026-03-02","subject":"Add example for project init + extend Readme"}]},{"path":"lua/plugins/mason.lua","name":"mason.lua","folder":"lua/plugins","loc":20,"churn":24,"churn_per_month":4.8,"commits":3,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1772464501,"date":"2026-03-02","subject":"install lsps for C/C++/C#/Pyton/Rust"},{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"lua/plugins/conform.lua","name":"conform.lua","folder":"lua/plugins","loc":20,"churn":22,"churn_per_month":4.4,"commits":2,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]},{"path":"lua/plugins/fugitive.lua","name":"fugitive.lua","folder":"lua/plugins","loc":3,"churn":3,"churn_per_month":3.0,"commits":1,"distinct_authors":1,"last_changed":"2026-06-08","recent_commits":[{"ts":1780928024,"date":"2026-06-08","subject":"add fugitive"}]},{"path":"lua/custom/enforce-unix-eol.lua","name":"enforce-unix-eol.lua","folder":"lua/custom","loc":10,"churn":12,"churn_per_month":2.4,"commits":2,"distinct_authors":1,"last_changed":"2026-06-14","recent_commits":[{"ts":1781438542,"date":"2026-06-14","subject":"Refactoring of whole repo (only small stuff)"},{"ts":1768306961,"date":"2026-01-13","subject":"put nvim files under version control"}]}]}</script>
+
+<!-- ═══ App script ══════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── 1. Data ──────────────────────────────────────────────────────────────────
+const DATA = JSON.parse(document.getElementById('analysis-data').textContent);
+
+// ── 2. Utilities ─────────────────────────────────────────────────────────────
+function fmtN(n) {
+  return (n == null) ? '—' : Number(n).toLocaleString();
+}
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ── 3. Color scale (white-blue, sqrt-stretched) ───────────────────────────────
+function churnColor(v, maxV) {
+  const t = Math.sqrt(Math.max(0, v) / Math.max(maxV, 1));
+  // #E8F5FE → #0D47A1
+  const r = Math.round(232 - (232 - 13)  * t);
+  const g = Math.round(245 - (245 - 71)  * t);
+  const b = Math.round(254 - (254 - 161) * t);
+  return `rgb(${r},${g},${b})`;
+}
+function onTile(v, maxV) {
+  return Math.sqrt(Math.max(0, v) / Math.max(maxV, 1)) > 0.42
+    ? 'rgba(255,255,255,0.88)'
+    : 'rgba(0,0,0,0.55)';
+}
+
+// ── 4. Squarified treemap ─────────────────────────────────────────────────────
+// Items must have a `value` field (positive number = desired area proportion).
+// Returns same items augmented with {x, y, w, h} in pixel space.
+
+function worstAspect(pxArr, s) {
+  const sum = pxArr.reduce((a, b) => a + b, 0);
+  if (sum <= 0 || s <= 0) return Infinity;
+  const L = sum / s;  // strip length along the short dimension
+  let worst = 0;
+  for (const px of pxArr) {
+    if (px <= 0) continue;
+    const side = px / L;
+    const r = (L > side) ? L / side : side / L;
+    if (r > worst) worst = r;
+  }
+  return worst;
+}
+
+function squarify(items, x, y, w, h) {
+  if (!items.length || w < 1 || h < 1) return [];
+  const total = items.reduce((s, i) => s + i.value, 0);
+  if (total <= 0) return items.map((it, i) => ({...it, x, y: y+(h/items.length)*i, w, h: h/items.length}));
+
+  // Pre-sort descending, scale to pixel area
+  const sorted = [...items]
+    .sort((a, b) => b.value - a.value)
+    .map(it => ({...it, _px: Math.max(it.value / total * w * h, 0.25)}));
+
+  const out = [];
+  _sq(sorted, x, y, w, h, out);
+  return out;
+}
+
+function _sq(items, x, y, w, h, out) {
+  if (!items.length) return;
+  if (items.length === 1) { out.push({...items[0], x, y, w, h}); return; }
+  if (w < 1 || h < 1) return;
+
+  const s = Math.min(w, h);
+  let rowPx   = [items[0]._px];
+  let rowLen  = 1;
+  let best    = worstAspect(rowPx, s);
+
+  for (let i = 1; i < items.length; i++) {
+    const cand = [...rowPx, items[i]._px];
+    const r    = worstAspect(cand, s);
+    if (r <= best) { rowPx = cand; best = r; rowLen++; }
+    else break;
+  }
+
+  const rowItems = items.slice(0, rowLen);
+  const rowSum   = rowPx.reduce((a, b) => a + b, 0);
+  const rest     = items.slice(rowLen);
+
+  if (w >= h) {
+    // Column on the left spanning full height
+    const colW = rowSum / h;
+    let cy = y;
+    for (let i = 0; i < rowItems.length; i++) {
+      const ih = rowPx[i] / colW;
+      out.push({...rowItems[i], x, y: cy, w: colW, h: ih});
+      cy += ih;
+    }
+    if (rest.length) _sq(rest, x + colW, y, w - colW, h, out);
+  } else {
+    // Row on top spanning full width
+    const rowH = rowSum / w;
+    let cx = x;
+    for (let i = 0; i < rowItems.length; i++) {
+      const iw = rowPx[i] / rowH;
+      out.push({...rowItems[i], x: cx, y, w: iw, h: rowH});
+      cx += iw;
+    }
+    if (rest.length) _sq(rest, x, y + rowH, w, h - rowH, out);
+  }
+}
+
+// ── 5. Treemap rendering ──────────────────────────────────────────────────────
+let activeMetric = 'churn_per_month';
+const TT = document.getElementById('tooltip');
+const FOLDER_HDR = 19;  // px tall folder header strip
+const PAD = 3;           // gap around folder tiles
+const INNER_PAD = 1;     // gap between file tiles
+
+function buildTreemap(metric) {
+  activeMetric = metric;
+  const box = document.getElementById('treemap');
+  box.innerHTML = '';
+
+  const matrix = (DATA.file_matrix || []).filter(f => f.loc > 0 || f.commits > 0);
+  if (!matrix.length) {
+    box.style.cssText += 'display:flex;align-items:center;justify-content:center;';
+    box.innerHTML = '<span style="color:#9E9E9E;font-size:13px">No file data</span>';
+    return;
+  }
+
+  const W = box.offsetWidth;
+  const H = box.offsetHeight;
+  const maxMetric = Math.max(1, ...matrix.map(f => Number(f[metric]) || 0));
+
+  // Group by folder, compute folder total LOC
+  const folderMap = Object.create(null);
+  for (const f of matrix) {
+    const fld = f.folder || f.path;
+    if (!folderMap[fld]) folderMap[fld] = {name: fld, files: [], loc: 0};
+    folderMap[fld].files.push(f);
+    folderMap[fld].loc += Math.max(f.loc, 1);
+  }
+
+  // Sort folders + files within each folder
+  const folders = Object.values(folderMap)
+    .sort((a, b) => b.loc - a.loc)
+    .map(fld => ({
+      ...fld,
+      value: fld.loc,
+      files: [...fld.files].sort((a, b) => b.loc - a.loc),
+    }));
+
+  const folderRects = squarify(folders, PAD, PAD, W - PAD*2, H - PAD*2);
+  const frag = document.createDocumentFragment();
+
+  for (const fr of folderRects) {
+    if (fr.w < 6 || fr.h < 6) continue;
+
+    // Folder background tile
+    const fEl = document.createElement('div');
+    fEl.className = 't-folder';
+    fEl.style.cssText = `left:${fr.x}px;top:${fr.y}px;width:${fr.w}px;height:${fr.h}px;`;
+
+    const showHdr = fr.h > FOLDER_HDR + 8 && fr.w > 32;
+    if (showHdr) {
+      const lbl = document.createElement('div');
+      lbl.className = 't-folder__lbl';
+      lbl.textContent = fr.name;
+      lbl.title = fr.name;
+      fEl.appendChild(lbl);
+    }
+    frag.appendChild(fEl);
+
+    // Inner area for file tiles
+    const iy = fr.y + (showHdr ? FOLDER_HDR : 0) + INNER_PAD;
+    const ih = fr.h - (showHdr ? FOLDER_HDR : 0) - INNER_PAD * 2;
+    const ix = fr.x + INNER_PAD;
+    const iw = fr.w - INNER_PAD * 2;
+    if (ih < 4 || iw < 4) continue;
+
+    const fileItems = fr.files.map(f => ({...f, value: Math.max(f.loc, 1)}));
+    const fileRects = squarify(fileItems, ix, iy, iw, ih);
+
+    for (const fi of fileRects) {
+      if (fi.w < 3 || fi.h < 3) continue;
+      const mv = Number(fi[metric]) || 0;
+      const bg = churnColor(mv, maxMetric);
+      const fg = onTile(mv, maxMetric);
+
+      const tile = document.createElement('div');
+      tile.className = 't-file';
+      tile.style.cssText = `left:${fi.x}px;top:${fi.y}px;width:${fi.w}px;height:${fi.h}px;background:${bg};color:${fg};`;
+
+      if (fi.w > 44 && fi.h > 15) {
+        const lbl = document.createElement('div');
+        lbl.className = 't-file__lbl';
+        lbl.textContent = fi.name;
+        fEl.appendChild(lbl); // intentionally on folder so it doesn't block hover
+        tile.appendChild(lbl);
+      }
+
+      tile.addEventListener('mouseenter', e => showTip(e, fi, metric, maxMetric));
+      tile.addEventListener('mousemove',  moveTooltip);
+      tile.addEventListener('mouseleave', hideTip);
+      frag.appendChild(tile);
+    }
+  }
+
+  box.appendChild(frag);
+}
+
+// ── 6. Tooltip ────────────────────────────────────────────────────────────────
+function showTip(e, f, metric, maxMetric) {
+  const commits = f.recent_commits || [];
+  TT.innerHTML = `
+    <div class="tt-title">${esc(f.path)}</div>
+    <div class="tt-body">
+      <div class="tt-row"><span class="tt-k">LOC</span>         <span class="tt-v">${fmtN(f.loc)}</span></div>
+      <div class="tt-row"><span class="tt-k">Churn/month</span> <span class="tt-v">${Number(f.churn_per_month||0).toFixed(1)}</span></div>
+      <div class="tt-row"><span class="tt-k">Total churn</span> <span class="tt-v">${fmtN(f.churn)}</span></div>
+      <div class="tt-row"><span class="tt-k">Commits</span>     <span class="tt-v">${fmtN(f.commits)}</span></div>
+      <div class="tt-row"><span class="tt-k">Authors</span>     <span class="tt-v">${fmtN(f.distinct_authors)}</span></div>
+      <div class="tt-row"><span class="tt-k">Last changed</span><span class="tt-v">${esc(f.last_changed)}</span></div>
+      ${commits.length ? `
+      <div class="tt-commits">
+        <div class="tt-commits-hdr">Recent commits</div>
+        ${commits.map(c => `
+        <div class="tt-commit">
+          <span class="tt-commit-date">${esc(c.date)}</span>
+          — ${esc(c.subject)}
+        </div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  TT.className = 'visible';
+  TT.style.display = 'block';
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tw = TT.offsetWidth, th = TT.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let L = e.clientX + 16, T = e.clientY - 12;
+  if (L + tw > vw - 8) L = e.clientX - tw - 16;
+  if (T + th > vh - 8) T = vh - th - 8;
+  if (T < 8) T = 8;
+  TT.style.left = L + 'px';
+  TT.style.top  = T + 'px';
+}
+function hideTip() { TT.style.display = 'none'; TT.className = ''; }
+
+// ── 7. Metric toggle ──────────────────────────────────────────────────────────
+document.getElementById('js-metric-toggle').addEventListener('click', e => {
+  const btn = e.target.closest('.tgl-btn');
+  if (!btn) return;
+  document.querySelectorAll('.tgl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildTreemap(btn.dataset.metric);
+});
+
+// ── 8. Summary cards ──────────────────────────────────────────────────────────
+function buildSummary() {
+  const grid = document.getElementById('js-summary');
+  const t = DATA.tooling || {};
+  const loc = t.loc_by_language || {};
+  const total = t.total_loc || 0;
+
+  function chip(obj, label) {
+    const ok = obj && obj.present;
+    return `<span class="tchip tchip--${ok?'ok':'no'}">
+      <span class="tchip__dot"></span>${label}
+    </span>`;
+  }
+
+  const langRows = Object.entries(loc).slice(0, 7).map(([lang, lv]) => {
+    const pct = total > 0 ? ((lv/total)*100).toFixed(1) : 0;
+    return `<div class="lang-row">
+      <span class="lang-name">${esc(lang)}</span>
+      <div class="lang-track"><div class="lang-fill" style="width:${pct}%"></div></div>
+      <span class="lang-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  grid.innerHTML = `
+    <div class="card anim-up" style="animation-delay:.04s">
+      <div class="card__hdr"><span class="card__title">Tooling</span></div>
+      <div class="card__body">
+        <div class="chip-row">
+          ${chip(t.ci,'CI')}
+          ${chip(t.tests,'Tests')}
+          ${chip(t.static_analysis,'Static analysis')}
+          ${chip(t.formatter,'Formatter')}
+        </div>
+      </div>
+    </div>
+    <div class="card anim-up" style="animation-delay:.08s">
+      <div class="card__hdr"><span class="card__title">Repository size</span></div>
+      <div class="card__body">
+        <div class="stat-row">
+          <div class="stat">
+            <span class="stat__lbl">Tracked files</span>
+            <span class="stat__val">${fmtN(t.file_count)}</span>
+          </div>
+          <div class="stat">
+            <span class="stat__lbl">Total LOC</span>
+            <span class="stat__val">${fmtN(total)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card anim-up" style="animation-delay:.12s">
+      <div class="card__hdr"><span class="card__title">Languages</span></div>
+      <div class="card__body">
+        <div class="lang-bar">
+          ${langRows || '<span style="color:#9E9E9E;font-size:12px">—</span>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── 9. Tables ─────────────────────────────────────────────────────────────────
+function card(title, delay, inner) {
+  return `<div class="card anim-up section-wrap" style="animation-delay:${delay}s">
+    <div class="card__hdr"><span class="card__title">${title}</span></div>
+    <div class="card__body">${inner}</div>
+  </div>`;
+}
+
+function tbl(headers, rows) {
+  const ths = headers.map(h => `<th>${h}</th>`).join('');
+  const trs = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+  return `<div class="tbl-wrap"><table>
+    <thead><tr>${ths}</tr></thead>
+    <tbody>${trs || '<tr><td colspan="'+headers.length+'" style="color:#9E9E9E;text-align:center;">—</td></tr>'}</tbody>
+  </table></div>`;
+}
+
+function authorsSection() {
+  const rows = (DATA.authors?.authors || []).map(a => {
+    const top = (a.top_files_by_churn||[]).map(f=>`<span class="mono">${esc(f.file)}</span>`).join('<br>');
+    return [
+      `<span class="mono">${esc(a.name)}</span>`,
+      `<span style="font-size:11px;color:#9E9E9E">${esc(a.email)}</span>`,
+      `<span class="num">${fmtN(a.commits)}</span>`,
+      `<span class="num">${fmtN(a.loc_written)}</span>`,
+      `<span class="num">${fmtN(a.loc_net)}</span>`,
+      esc(a.first_commit),
+      esc(a.last_commit),
+      `<span class="num"><span class="badge b-blue">${a.pct_current_files_touched}%</span></span>`,
+      `<span style="font-size:11px">${top||'—'}</span>`,
+    ];
+  });
+  return card('Authors', 0.18,
+    tbl(['Name','Email','Commits','LOC Written','LOC Net','First Commit','Last Commit','% Files','Top Files'], rows));
+}
+
+function hotSection() {
+  const h = DATA.hot;
+  if (!h) return '';
+  const fileRows = (h.hot_files||[]).map(f => {
+    const s = Number(f.score);
+    const cls = s>20?'b-red':s>8?'b-amber':'b-blue';
+    return [
+      `<span class="mono">${esc(f.file)}</span>`,
+      `<span class="num"><span class="badge ${cls}">${s.toFixed(0)}</span></span>`,
+      `<span class="num">${fmtN(f.commits)}</span>`,
+      `<span class="num">${fmtN(f.distinct_authors)}</span>`,
+      `<span class="num">${Number(f.avg_churn_per_month).toFixed(1)}</span>`,
+      esc(f.last_changed),
+      `<span class="num">${fmtN(f.loc)}</span>`,
+    ];
+  });
+  const folderRows = (h.hot_folders||[]).map(f => [
+    `<span class="mono">${esc(f.folder)}</span>`,
+    `<span class="num">${fmtN(f.files)}</span>`,
+    `<span class="num"><span class="badge b-blue">${Number(f.total_score).toFixed(0)}</span></span>`,
+    `<span class="num">${fmtN(f.total_commits)}</span>`,
+    `<span class="num">${fmtN(f.distinct_authors)}</span>`,
+    `<span class="num">${fmtN(f.total_churn)}</span>`,
+    esc(f.last_changed),
+  ]);
+  const titleHtml = 'Hot Files <span style="font-size:12px;font-weight:400;color:#9E9E9E">— commits × distinct authors</span>';
+  return card(titleHtml, 0.22,
+    tbl(['File','Score','Commits','Authors','Avg Churn/mo','Last Changed','LOC'], fileRows) +
+    '<div class="sub-hdr">By folder</div>' +
+    tbl(['Folder','Files','Score','Commits','Authors','Total Churn','Last Changed'], folderRows));
+}
+
+function stableSection() {
+  const s = DATA.stable;
+  if (!s) return '';
+  const note = s.total_stable_files
+    ? `<p style="font-size:12px;color:#757575;margin-bottom:12px">${s.total_stable_files} stable files — bottom 50th percentile lifetime churn.</p>`
+    : '';
+  const fileRows = (s.stable_files||[]).map(f => [
+    `<span class="mono">${esc(f.file)}</span>`,
+    esc(f.last_changed),
+    `<span class="num">${fmtN(f.commits)}</span>`,
+    `<span class="num">${fmtN(f.churn)}</span>`,
+    `<span class="num">${fmtN(f.loc)}</span>`,
+  ]);
+  const folderRows = (s.stable_folders||[]).map(f => [
+    `<span class="mono">${esc(f.folder)}</span>`,
+    `<span class="num">${fmtN(f.stable_files)}</span>`,
+    `<span class="num">${fmtN(f.total_loc)}</span>`,
+    esc(f.oldest_last_change),
+    `<span class="num">${fmtN(f.total_churn)}</span>`,
+  ]);
+  const titleHtml = 'Stable Files <span style="font-size:12px;font-weight:400;color:#9E9E9E">— rarely changed business logic</span>';
+  return card(titleHtml, 0.26,
+    note +
+    tbl(['File','Last Changed','Commits','Churn','LOC'], fileRows) +
+    '<div class="sub-hdr">By folder</div>' +
+    tbl(['Folder','Stable Files','Total LOC','Oldest Last Change','Total Churn'], folderRows));
+}
+
+function recentSection() {
+  const r = DATA.recent;
+  if (!r) return '';
+  const fileRows = (r.recent_files||[]).map(f => [
+    `<span class="mono">${esc(f.file)}</span>`,
+    esc(f.last_changed),
+    `<span class="num">${fmtN(f.commits)}</span>`,
+    `<span class="num">${fmtN(f.distinct_authors)}</span>`,
+  ]);
+  const folderRows = (r.recent_folders||[]).map(f => [
+    `<span class="mono">${esc(f.folder)}</span>`,
+    esc(f.last_changed),
+    `<span class="num">${fmtN(f.files)}</span>`,
+    `<span class="num">${fmtN(f.total_commits)}</span>`,
+  ]);
+  return card('Recently Modified', 0.30,
+    '<div class="sub-hdr">Top files</div>' +
+    tbl(['File','Last Changed','Commits','Authors'], fileRows) +
+    '<div class="sub-hdr">By folder</div>' +
+    tbl(['Folder','Last Changed','Files','Total Commits'], folderRows));
+}
+
+function buildSections() {
+  document.getElementById('js-sections').innerHTML =
+    authorsSection() +
+    hotSection() +
+    stableSection() +
+    recentSection();
+}
+
+// ── 10. Meta bar ──────────────────────────────────────────────────────────────
+function buildMeta() {
+  const m = DATA.meta || {};
+  document.getElementById('js-repo-path').textContent   = m.repo_path    || '';
+  document.getElementById('js-head-sha').textContent    = (m.head_commit||'').slice(0,8);
+  document.getElementById('js-generated-at').textContent = m.generated_at || '';
+}
+
+// ── 11. Init ──────────────────────────────────────────────────────────────────
+function init() {
+  buildMeta();
+  buildSummary();
+  buildSections();
+  // Build treemap after layout paint so offsetWidth/Height are correct
+  requestAnimationFrame(() => requestAnimationFrame(() => buildTreemap(activeMetric)));
+}
+
+// Rebuild on resize (debounced)
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => buildTreemap(activeMetric), 200);
+});
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
