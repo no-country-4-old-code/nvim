@@ -1,6 +1,7 @@
 return {
 	{
 		"ldelossa/litee.nvim",
+		pin = true,
 		config = function()
 			require("litee.lib").setup({
 				notify = { enabled = false },
@@ -13,6 +14,7 @@ return {
 	},
 	{
 		"ldelossa/litee-calltree.nvim",
+		pin = true,
 		dependencies = { "ldelossa/litee.nvim" },
 		config = function()
 			require("litee.calltree").setup({
