@@ -2,11 +2,13 @@
 -- Copy this file to the root of your project and adjust to your needs.
 -- Neovim will prompt you to trust it on first load (once per file change).
 
---  Configure LSP server for C/C++
+-- directory which contains compile-commands.json for LSP like clangd or cppcheck
+local build_dir = "build"
+
 vim.lsp.config("clangd", {
 	cmd = {
 		"clangd",
-		"--compile-commands-dir=build",
+		"--compile-commands-dir=" .. build_dir,
 		"--clang-tidy",
 		"--background-index",
 		"--completion-style=detailed",
@@ -48,3 +50,8 @@ end, { desc = "cargo test" })
 vim.keymap.set("n", "<leader>4", function()
 	print("Moin Moin")
 end, { desc = "Moin Moin" })
+
+local cppcheck = require("custom.cppcheck")
+vim.keymap.set("n", "<leader>5", function()
+	cppcheck.check_project(vim.fn.getcwd() .. "/" .. build_dir .. "/compile_commands.json")
+end, { desc = "cppcheck full project" })
