@@ -89,8 +89,19 @@ function M.goto_incoming_call_site(ctx, focus)
 	end
 end
 
--- Move the source window cursor to the call site for an outgoing node.
--- Replaces litee's auto_highlight cursor-move for the "to" direction.
+-- DFS to find the parent of the node with target_key.
+local function find_parent_node(root, target_key)
+	if root == nil or root.children == nil then return nil end
+	for _, child in ipairs(root.children) do
+		if child.key == target_key then return root end
+		local found = find_parent_node(child, target_key)
+		if found then return found end
+	end
+	return nil
+end
+
+-- Open the caller (parent) file at the call site for an outgoing node.
+-- fromRanges are always in the caller's file, which is the parent node's uri.
 local function preview_outgoing(ctx)
 	local node = ctx.node
 	if node == nil or node.depth == 0 then return end
@@ -98,12 +109,22 @@ local function preview_outgoing(ctx)
 	local ref = node.references[1]
 	if ref == nil or ref["start"] == nil or ref["start"].line < 0 then return end
 
-	local win = ctx.invoking_win
-	if win == nil or not vim.api.nvim_win_is_valid(win) then return end
+	local ok, lib_tree = pcall(require, "litee.lib.tree")
+	if not ok then return end
+	local tree = lib_tree.get_tree(ctx.tree)
+	if tree == nil or tree.root == nil then return end
+	local parent = find_parent_node(tree.root, node.key)
+	if parent == nil or parent.location == nil or parent.location.uri == nil then return end
 
+	local target_win = find_source_win(ctx)
+	if target_win == nil then return end
+
+	local buf = load_uri(parent.location.uri)
 	local line = ref["start"].line + 1
-	if line > vim.api.nvim_buf_line_count(vim.api.nvim_win_get_buf(win)) then return end
-	vim.api.nvim_win_set_cursor(win, { line, 0 })
+	if line > vim.api.nvim_buf_line_count(buf) then return end
+
+	vim.api.nvim_win_set_buf(target_win, buf)
+	vim.api.nvim_win_set_cursor(target_win, { line, ref["start"].character })
 end
 
 local _last_preview_key = nil
@@ -124,22 +145,37 @@ function M.preview()
 	end
 end
 
+-- Close the calltree panel while suppressing litee's WinEnter extmark handler.
+-- The handler crashes when outgoing-call fromRanges (caller-file positions) are
+-- applied as extmarks to the callee's buffer that we loaded for preview.
+local function safe_close()
+	local saved = vim.o.eventignore
+	vim.o.eventignore = "all"
+	vim.cmd("LTCloseCalltree")
+	vim.o.eventignore = saved
+end
+
 -- ENTER: focus the call site and close the panel.
 function M.on_enter()
 	local ctx = M.ctx()
 	if ctx == nil then
 		vim.cmd("LTJumpCalltree")
-		vim.cmd("LTCloseCalltree")
+		safe_close()
 		return
 	end
 
 	if ctx.direction == "from" and ctx.node ~= nil and ctx.node.depth ~= 0 then
 		M.goto_incoming_call_site(ctx, true)
-		vim.cmd("LTCloseCalltree")
+		safe_close()
 	else
 		vim.cmd("LTJumpCalltree")
-		vim.cmd("LTCloseCalltree")
+		safe_close()
 	end
+end
+
+-- ESC: close the panel safely.
+function M.on_close()
+	safe_close()
 end
 
 -- Focus the calltree panel window. Returns true if found and focused.

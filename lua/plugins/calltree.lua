@@ -33,8 +33,8 @@ return {
 						if not vim.api.nvim_buf_is_valid(ev.buf) then return end
 						local ct = require("plugins.extensions.calltree")
 						local o = { buffer = ev.buf, silent = true }
-						vim.keymap.set("n", "<Esc>", "<cmd>LTCloseCalltree<cr>", o)
-						vim.keymap.set("n", "<CR>", ct.on_enter, o)
+						vim.keymap.set("n", "<Esc>", ct.on_close, o)
+						vim.keymap.set("n", "<CR>", ct.on_close, o)
 						vim.api.nvim_create_autocmd("CursorMoved", {
 							buffer = ev.buf,
 							callback = ct.preview,
