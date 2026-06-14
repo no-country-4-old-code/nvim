@@ -37,6 +37,19 @@ return {
 				end
 			end
 
+			local function grep_in_node()
+				local node = api.tree.get_node_under_cursor()
+				if not node then return end
+				local path
+				if node.type == "directory" then
+					path = node.absolute_path
+				else
+					-- file: scope to its parent directory
+					path = vim.fn.fnamemodify(node.absolute_path, ":h")
+				end
+				require("telescope.builtin").live_grep({ search_dirs = { path } })
+			end
+
 			-- default mappings
 			api.config.mappings.default_on_attach(bufnr)
 
@@ -56,6 +69,7 @@ return {
 			vim.keymap.set("n", "q", api.tree.close, opts("Close Dialog"))
 			vim.keymap.set("n", "<ESC>", api.tree.close, opts("Close Dialog"))
 			vim.keymap.set("n", "?", api.tree.toggle_help, opts("Help"))
+			vim.keymap.set("n", "<leader>fg", grep_in_node, opts("Grep in node subtree"))
 		end
 
 		-- migth not be rendered correctly on WSL
