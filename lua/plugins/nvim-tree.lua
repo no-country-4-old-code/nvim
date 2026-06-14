@@ -72,9 +72,8 @@ return {
 			vim.keymap.set("n", "<leader>fg", grep_in_node, opts("Grep in node subtree"))
 		end
 
-		-- migth not be rendered correctly on WSL
+		-- might not be rendered correctly on WSL
 		require("nvim-web-devicons").setup({
-			--	strict = true,
 			override_by_extension = {
 				["lua"] = {
 					icon = "L",

@@ -65,7 +65,7 @@ function M.setup()
 	vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Navigation : Browse open buffers" })
 	vim.keymap.set("n", "<leader>w", pick_window_to_jump, { desc = "Navigation : Pick window to jump to" })
 	vim.keymap.set("n", "<C-o>", "<C-o>", { desc = "Navigation : Jump back to previous position" })
-	vim.keymap.set("n", "<C-i>", "<C-i>", { desc = "Navigation : Jump forwad again" })
+	vim.keymap.set("n", "<C-i>", "<C-i>", { desc = "Navigation : Jump forward again" })
 	vim.keymap.set({ "n", "o", "x" }, ",", "^", { desc = "Navigation : Set cursor to start of line" })
 	vim.keymap.set({ "n", "o", "x" }, ".", "$", { desc = "Navigation : Set cursor to end of line" })
 

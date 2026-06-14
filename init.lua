@@ -1,7 +1,7 @@
 -- Cmds for managing
 -- :Lazy   	-> Opens lazy.nvim plugin manager
--- :Manson 	-> Opens Manson external tool manager
--- :checkhealth -> Run healtcheck on nvim config
+-- :Mason 	-> Opens Mason external tool manager
+-- :checkhealth -> Run healthcheck on nvim config
 
 -- use package manager 'lazy.nvim'
 require("config.lazy")

@@ -3,7 +3,6 @@
 return {
 	{
 		"neovim/nvim-lspconfig",
-		enable = true,
 		config = function()
 			vim.diagnostic.config({
 				signs = false, -- I do not like if line-numbers move on the side
@@ -20,21 +19,28 @@ return {
 				callback = set_lsp_float_highlights,
 			})
 
+			-- Enable inlay hints for any LSP client that supports them
+			vim.api.nvim_create_autocmd("LspAttach", {
+				callback = function(args)
+					local client = vim.lsp.get_client_by_id(args.data.client_id)
+					if client and client:supports_method("textDocument/inlayHint") then
+						vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+					end
+				end,
+			})
+
 			-- Rust
-			on_attach =
-				function(client, bufnr)
-					vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-				end, vim.lsp.config("rust_analyzer", {
-					settings = {
-						["rust-analyzer"] = {
-							cargo = { allFeatures = true },
-							checkOnSave = true,
-							check = {
-								command = "clippy",
-							},
+			vim.lsp.config("rust_analyzer", {
+				settings = {
+					["rust-analyzer"] = {
+						cargo = { allFeatures = true },
+						checkOnSave = true,
+						check = {
+							command = "clippy",
 						},
 					},
-				})
+				},
+			})
 			vim.lsp.enable("rust_analyzer")
 
 			-- C / C++

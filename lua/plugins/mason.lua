@@ -12,7 +12,6 @@ return {
 				"pyright",
 			},
 		},
-		enable = true,
 		dependencies = {
 			{ "mason-org/mason.nvim", opts = {} },
 			"neovim/nvim-lspconfig",
